@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Operación Limpieza</title>
+<style>
+  :root{
+    --bg:#0f1419;
+    --panel:#161d26;
+    --paper:#f4f6f8;
+    --ink:#1a2230;
+    --muted:#6b7787;
+    --line:#dde3ea;
+    --iago:#0d9488;       /* teal */
+    --iago-soft:#d3f0ec;
+    --laura:#7c3aed;      /* violeta */
+    --laura-soft:#e9ddfb;
+    --verde:#22a55b;
+    --amarillo:#eab308;
+    --naranja:#ea7317;
+    --rojo:#d83a3a;
+    --shadow:0 10px 30px rgba(8,12,18,.18);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(900px 500px at 100% -10%, #1d2733 0%, transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, #1a2230 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    padding:18px 12px 150px;
+  }
+  .wrap{max-width:780px;margin:0 auto}
+
+  header.brief{
+    color:#e8edf3;
+    padding:8px 6px 18px;
+  }
+  .kicker{
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:#62c4ba;font-weight:700;margin-bottom:6px;
+  }
+  h1{
+    font-family:"Arial Narrow",Arial,sans-serif;
+    font-weight:800;font-size:34px;line-height:.96;margin:0 0 8px;
+    letter-spacing:-.5px;text-transform:uppercase;
+  }
+  h1 b{color:#62c4ba}
+  .sub{color:#9aa7b6;font-size:13px;max-width:540px;line-height:1.5;margin:0}
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;
+  }
+  .legend .chip{
+    display:flex;align-items:center;gap:6px;background:#1e2733;
+    border:1px solid #2b3744;border-radius:999px;padding:5px 10px;
+    font-size:11.5px;color:#cdd7e1;font-weight:600;
+  }
+  .legend .dot{width:11px;height:11px;border-radius:50%}
+
+  /* tablero */
+  .board{
+    background:var(--paper);border-radius:16px;overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .colhead{
+    position:sticky;top:0;z-index:5;
+    display:grid;grid-template-columns:62px 1fr 62px;
+    background:#fff;border-bottom:2px solid var(--ink);
+  }
+  .colhead .c{
+    text-align:center;font-weight:800;font-size:12px;letter-spacing:.08em;
+    text-transform:uppercase;padding:12px 4px;
+  }
+  .colhead .c.mid{text-align:left;color:var(--muted);font-size:11px;padding-left:14px}
+  .colhead .c.iago{color:var(--iago);background:var(--iago-soft)}
+  .colhead .c.laura{color:var(--laura);background:var(--laura-soft)}
+
+  .zone{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ink);color:#cfe0dc;
+    padding:9px 14px;font-size:11px;font-weight:800;
+    letter-spacing:.18em;text-transform:uppercase;
+  }
+  .zone .n{
+    margin-left:auto;font-weight:600;letter-spacing:0;color:#8aa0a0;
+    text-transform:none;font-size:11px;
+  }
+
+  .row{
+    display:grid;grid-template-columns:62px 1fr 62px;
+    border-bottom:1px solid var(--line);align-items:stretch;
+    background:#fff;
+  }
+  .row:last-child{border-bottom:none}
+
+  .mark{
+    border:none;background:transparent;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;color:transparent;
+    border-right:1px solid var(--line);transition:background .12s;
+    user-select:none;
+  }
+  .mark.r{border-right:none;border-left:1px solid var(--line)}
+  .mark .pt{font-size:11px;font-weight:700;margin-left:1px;opacity:.55;align-self:flex-start;margin-top:10px}
+  .mark.iago.on{background:var(--iago-soft);color:var(--iago)}
+  .mark.laura.on{background:var(--laura-soft);color:var(--laura)}
+  .mark:active{background:#eef2f6}
+
+  .cell{
+    padding:10px 12px;min-width:0;
+    border-left:4px solid transparent;
+  }
+  .name{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.2}
+  .note{font-size:11px;color:var(--muted);margin-top:2px}
+  .dots{display:flex;gap:7px;margin-top:8px}
+  .d{
+    width:26px;height:18px;border-radius:6px;cursor:pointer;border:2px solid transparent;
+    background:#e7ecf1;position:relative;transition:transform .08s;
+  }
+  .d:active{transform:scale(.9)}
+  .d[data-d="verde"]{background:#bfe8cf}
+  .d[data-d="amarillo"]{background:#f6e7a8}
+  .d[data-d="naranja"]{background:#f8cfa6}
+  .d[data-d="rojo"]{background:#f3b6b6}
+  .d.sel[data-d="verde"]{background:var(--verde);border-color:#0d6b38}
+  .d.sel[data-d="amarillo"]{background:var(--amarillo);border-color:#9a7700}
+  .d.sel[data-d="naranja"]{background:var(--naranja);border-color:#a44d0c}
+  .d.sel[data-d="rojo"]{background:var(--rojo);border-color:#962323}
+  .d.sel::after{content:attr(data-v);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+
+  /* borde izquierdo + fondo de celda según dificultad */
+  .cell.verde{border-left-color:var(--verde);background:#e3f5ea}
+  .cell.amarillo{border-left-color:var(--amarillo);background:#fbf3d3}
+  .cell.naranja{border-left-color:var(--naranja);background:#fce6d4}
+  .cell.rojo{border-left-color:var(--rojo);background:#fbe0e0}
+
+  /* añadir tarea */
+  .addrow{display:grid;grid-template-columns:62px 1fr 62px;background:#fafbfc;border-bottom:1px solid var(--line)}
+  .addrow .add{grid-column:2;padding:8px 12px;display:flex;gap:6px}
+  .addrow input{
+    flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;
+    font-family:inherit;
+  }
+  .addrow button{
+    border:none;background:var(--ink);color:#fff;border-radius:8px;padding:0 12px;
+    font-weight:700;font-size:13px;cursor:pointer;
+  }
+
+  /* marcador flotante */
+  .scoreboard{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    background:rgba(15,20,25,.96);backdrop-filter:blur(8px);
+    border-top:1px solid #2b3744;color:#fff;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  }
+  .sb-inner{max-width:780px;margin:0 auto}
+  .scores{display:flex;gap:10px;align-items:stretch}
+  .score{
+    flex:1;border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;
+    background:#1c2632;border:1px solid #2b3744;
+  }
+  .score.iago{border-color:var(--iago)}
+  .score.laura{border-color:var(--laura)}
+  .score .who{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;opacity:.85}
+  .score.iago .who{color:#5fe0d3}
+  .score.laura .who{color:#c4a6f7}
+  .score .pts{font-family:"Arial Narrow",Arial;font-size:30px;font-weight:800;line-height:1}
+  .score .meta{font-size:11px;color:#9aa7b6;margin-top:2px}
+
+  .bar{height:8px;border-radius:999px;background:#2b3744;overflow:hidden;display:flex;margin-top:10px}
+  .bar .bi{background:var(--iago);transition:width .25s}
+  .bar .bl{background:var(--laura);transition:width .25s}
+  .verdict{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:12.5px}
+  .verdict .v{font-weight:700}
+  .verdict .reset{
+    background:transparent;border:1px solid #3a4856;color:#9aa7b6;border-radius:8px;
+    padding:5px 10px;font-size:11.5px;cursor:pointer;font-weight:600;
+  }
+  .verdict .reset:active{background:#222d3a}
+
+  @media (max-width:420px){
+    h1{font-size:29px}
+    .d{width:22px;height:17px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brief">
+    <div class="kicker">Reparto de tareas · hogar</div>
+    <h1>Operación <b>Limpieza</b></h1>
+    <p class="sub">Marca la dificultad de cada tarea con un color y reparte con una ✕ quién la hace. El marcador de abajo suma los puntos de cada uno para ver si el reparto es justo.</p>
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--verde)"></span>Verde · 1</span>
+      <span class="chip"><span class="dot" style="background:var(--amarillo)"></span>Amarillo · 2</span>
+      <span class="chip"><span class="dot" style="background:var(--naranja)"></span>Naranja · 3</span>
+      <span class="chip"><span class="dot" style="background:var(--rojo)"></span>Rojo · 4</span>
+    </div>
+  </header>
+
+  <div class="board">
+    <div class="colhead">
+      <div class="c iago">Iago</div>
+      <div class="c mid">Tarea · dificultad</div>
+      <div class="c laura">Laura</div>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<div class="scoreboard">
+  <div class="sb-inner">
+    <div class="scores">
+      <div class="score iago">
+        <span class="who">Iago</span>
+        <span class="pts" id="ptsIago">0</span>
+        <span class="meta" id="metaIago">0 tareas</span>
+      </div>
+      <div class="score laura">
+        <span class="who">Laura</span>
+        <span class="pts" id="ptsLaura">0</span>
+        <span class="meta" id="metaLaura">0 tareas</span>
+      </div>
+    </div>
+    <div class="bar"><div class="bi" id="barIago" style="width:50%"></div><div class="bl" id="barLaura" style="width:50%"></div></div>
+    <div class="verdict">
+      <span class="v" id="verdict">Sin asignar todavía</span>
+      <button class="reset" id="reset">Reiniciar todo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PTS = {verde:1, amarillo:2, naranja:3, rojo:4};
+
+const ZONES = [
+  {z:"Suelos", t:[
+    {n:"Aspirar", note:"Barato pero regular"},
+    {n:"Aspirar + fregar"},
+  ]},
+  {z:"Baños", t:[
+    {n:"Baño Iago"},
+    {n:"Baño Laura"},
+  ]},
+  {z:"Espacios de trabajo", t:[
+    {n:"Estudio Iago"},
+    {n:"Taller Laura"},
+  ]},
+  {z:"Cocina", t:[
+    {n:"Fregadero y repisa"},
+    {n:"Superficies verticales"},
+    {n:"Mampara y electrodomésticos"},
+    {n:"Interior nevera"},
+    {n:"Interior alacenas"},
+    {n:"Fregadero / tendal"},
+    {n:"Parte superior de nevera y lavadora"},
+  ]},
+  {z:"Salón", t:[
+    {n:"Comedero Visma"},
+    {n:"Ordenar armarios"},
+    {n:"Superficies horizontales", note:"Polvo y paño"},
+    {n:"Ordenar sofá"},
+    {n:"Espejo salón"},
+  ]},
+  {z:"Habitación", t:[
+    {n:"Ordenar armarios"},
+    {n:"Mesillas"},
+    {n:"Cambiar sábanas"},
+    {n:"Hacer la cama"},
+    {n:"Espejo habitación"},
+  ]},
+  {z:"Ventanas", t:[
+    {n:"Ventanas por dentro"},
+    {n:"Ventanas por fuera"},
+  ]},
+  {z:"Visma", t:[
+    {n:"Cepillar a Visma"},
+    {n:"Entrenamiento Visma"},
+    {n:"Sacar a Visma por la mañana"},
+  ]},
+  {z:"Entrada y basura", t:[
+    {n:"Puertas"},
+    {n:"Muebles entrada"},
+    {n:"Bajar la basura"},
+    {n:"Limpiar el cubo de la basura"},
+  ]},
+];
+
+const KEY = "operacion_limpieza_v1";
+let state = {};   // id -> {diff, iago, laura}
+let extra = {};   // zoneIndex -> [taskName,...]
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const d = JSON.parse(raw); state = d.state||{}; extra = d.extra||{}; }
+  }catch(e){ /* storage no disponible: seguimos en memoria */ }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify({state, extra})); }catch(e){}
+}
+
+function st(id){ if(!state[id]) state[id] = {diff:null, iago:false, laura:false}; return state[id]; }
+
+function buildTasks(){
+  const out = [];
+  ZONES.forEach((zone, zi)=>{
+    const tasks = zone.t.map((t,ti)=>({id:"z"+zi+"-"+ti, name:t.n, note:t.note||"", zi}));
+    (extra[zi]||[]).forEach((name, ei)=>{
+      tasks.push({id:"z"+zi+"-x"+ei, name, note:"", zi});
+    });
+    out.push({z:zone.z, zi, tasks});
+  });
+  return out;
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  buildTasks().forEach(group=>{
+    const zh = document.createElement("div");
+    zh.className = "zone";
+    zh.innerHTML = '<span>'+group.z+'</span><span class="n">'+group.tasks.length+' tareas</span>';
+    list.appendChild(zh);
+
+    group.tasks.forEach(task=>{
+      const s = st(task.id);
+      const row = document.createElement("div");
+      row.className = "row";
+      const dots = ["verde","amarillo","naranja","rojo"].map(c=>{
+        const sel = s.diff===c ? " sel":"";
+        return '<div class="d'+sel+'" data-d="'+c+'" data-v="'+PTS[c]+'" data-act="diff" data-id="'+task.id+'" data-c="'+c+'"></div>';
+      }).join("");
+      row.innerHTML =
+        '<button class="mark iago'+(s.iago?" on":"")+'" data-act="who" data-id="'+task.id+'" data-w="iago">'+
+          (s.iago?'✕<span class="pt">'+(s.diff?PTS[s.diff]:0)+'</span>':'')+'</button>'+
+        '<div class="cell '+(s.diff||"")+'">'+
+          '<div class="name">'+task.name+'</div>'+
+          (task.note?'<div class="note">'+task.note+'</div>':'')+
+          '<div class="dots">'+dots+'</div>'+
+        '</div>'+
+        '<button class="mark laura r'+(s.laura?" on":"")+'" data-act="who" data-id="'+task.id+'" data-w="laura">'+
+          (s.laura?'✕<span class="pt">'+(s.diff?PTS[s.diff]:0)+'</span>':'')+'</button>';
+      list.appendChild(row);
+    });
+
+    // fila para añadir tarea
+    const ar = document.createElement("div");
+    ar.className = "addrow";
+    ar.innerHTML = '<div class="add"><input type="text" placeholder="Añadir tarea a '+group.z+'…" data-zi="'+group.zi+'"><button data-addzi="'+group.zi+'">Añadir</button></div>';
+    list.appendChild(ar);
+  });
+  updateScore();
+}
+
+function updateScore(){
+  let iP=0, lP=0, iN=0, lN=0;
+  Object.values(state).forEach(s=>{
+    const v = s.diff?PTS[s.diff]:0;
+    if(s.iago){ iP+=v; iN++; }
+    if(s.laura){ lP+=v; lN++; }
+  });
+  document.getElementById("ptsIago").textContent = iP;
+  document.getElementById("ptsLaura").textContent = lP;
+  document.getElementById("metaIago").textContent = iN+(iN===1?" tarea":" tareas");
+  document.getElementById("metaLaura").textContent = lN+(lN===1?" tarea":" tareas");
+
+  const total = iP+lP;
+  const iw = total? Math.round(iP/total*100) : 50;
+  document.getElementById("barIago").style.width = iw+"%";
+  document.getElementById("barLaura").style.width = (100-iw)+"%";
+
+  const diff = Math.abs(iP-lP);
+  const v = document.getElementById("verdict");
+  if(total===0){ v.textContent="Sin asignar todavía"; v.style.color="#9aa7b6"; }
+  else if(diff===0){ v.textContent="⚖️ Reparto perfecto"; v.style.color="#5fe0d3"; }
+  else if(diff<=2){ v.textContent="✓ Reparto equilibrado · "+diff+" pts"; v.style.color="#7bd88f"; }
+  else { const quien = iP>lP?"Iago":"Laura"; v.textContent="↕ "+quien+" va cargado · +"+diff+" pts"; v.style.color="#f0b86e"; }
+}
+
+document.addEventListener("click", e=>{
+  const dot = e.target.closest('[data-act="diff"]');
+  if(dot){
+    const s = st(dot.dataset.id);
+    const c = dot.dataset.c;
+    s.diff = (s.diff===c) ? null : c;   // re-tocar el mismo color lo quita
+    save(); render(); return;
+  }
+  const who = e.target.closest('[data-act="who"]');
+  if(who){
+    const s = st(who.dataset.id);
+    const w = who.dataset.w;
+    s[w] = !s[w];
+    save(); render(); return;
+  }
+  const addBtn = e.target.closest('[data-addzi]');
+  if(addBtn){
+    const zi = addBtn.dataset.addzi;
+    const input = addBtn.previousElementSibling;
+    const val = (input.value||"").trim();
+    if(val){
+      if(!extra[zi]) extra[zi]=[];
+      extra[zi].push(val);
+      save(); render();
+    }
+    return;
+  }
+});
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  if(confirm("¿Reiniciar todas las dificultades y asignaciones? (Se mantienen las tareas añadidas)")){
+    state = {}; save(); render();
+  }
+});
+
+load();
+render();
+</script>
+</body>
+</html>
