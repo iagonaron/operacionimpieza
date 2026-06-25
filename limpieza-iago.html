@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Limpieza Iago">
+<meta name="theme-color" content="#0f1419">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+<title>Mi limpieza · Iago</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161d26; --card:#1b2430; --line:#2a3543;
+    --ink:#eaf0f6; --muted:#8a98a8;
+    --accent:#3b82f6; --accent-soft:#1e3155;
+    --other:#8b5cf6;
+    --verde:#22a55b; --amarillo:#eab308; --naranja:#ea7317; --rojo:#d83a3a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(700px 420px at 110% -8%, #1c2a3f 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink); min-height:100vh;
+    padding:max(16px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
+    -webkit-user-select:none;user-select:none;
+  }
+  .wrap{max-width:560px;margin:0 auto}
+
+  header{padding:6px 4px 0}
+  .hi{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .date{font-size:14px;color:var(--muted);text-transform:capitalize;margin-top:3px}
+  .hero{display:flex;align-items:flex-end;gap:14px;margin-top:8px}
+  .bignum{font-family:"Arial Narrow",Arial;font-size:64px;font-weight:800;line-height:.85}
+  .herotxt{padding-bottom:8px}
+  .herotxt .l1{font-size:15px;font-weight:700}
+  .herotxt .l2{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  .tabs{display:flex;gap:6px;margin:16px 0 14px}
+  .tab{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:11px;padding:11px;font-size:13px;font-weight:700;cursor:pointer}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .sec{margin-top:18px}
+  .sec h3{display:flex;align-items:center;gap:8px;margin:0 0 9px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .sec h3 .cnt{margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px;color:var(--ink)}
+  .sec.collapsed .body{display:none}
+  .sec h3.click{cursor:pointer}
+  .sec h3 .car{transition:transform .15s}
+  .sec.collapsed h3 .car{transform:rotate(-90deg)}
+
+  .card{
+    display:flex;align-items:center;gap:13px;background:var(--card);
+    border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:13px;padding:13px 14px;margin-bottom:9px;
+  }
+  .card.verde{border-left-color:var(--verde)}
+  .card.amarillo{border-left-color:var(--amarillo)}
+  .card.naranja{border-left-color:var(--naranja)}
+  .card.rojo{border-left-color:var(--rojo)}
+
+  .check{
+    width:30px;height:30px;border-radius:50%;border:2.5px solid #3a4856;flex:none;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    color:transparent;font-size:16px;font-weight:900;transition:all .15s;
+  }
+  .check:active{transform:scale(.9)}
+  .card.done .check{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card.done .tname{color:var(--muted);text-decoration:line-through}
+
+  .tinfo{flex:1;min-width:0}
+  .tname{font-size:15.5px;font-weight:600;line-height:1.2}
+  .tsub{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+  .tsub .z{color:#9fb0c2}
+  .badge{font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px;letter-spacing:.03em}
+  .badge.due{background:#3a1d1d;color:#ff9a9a}
+  .badge.soon{background:#1e2a1c;color:#9fd99f}
+  .badge.freq{background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+
+  .empty{color:var(--muted);font-size:13px;padding:10px 2px}
+
+  /* ajustes */
+  .setrow{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:9px}
+  .setrow .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .setrow .nm{font-size:15px;font-weight:600}
+  .setrow .last{font-size:11px;color:var(--muted)}
+  .freqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .f{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+  .f.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  .toolbar{display:flex;gap:8px;margin:4px 0 16px}
+  .toolbar button{flex:1;border-radius:10px;padding:11px;font-weight:700;font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted)}
+  .toolbar .warn{color:#ffb4b4;border-color:#5a2b2b}
+  .note{font-size:12px;color:var(--muted);line-height:1.5;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:14px}
+  #view-ajustes{display:none}
+
+  /* feed compartido */
+  .refresh{margin-left:auto;background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer}
+  .refresh:active{transform:scale(.96)}
+  .feedrow{display:flex;align-items:center;gap:9px;padding:8px 0;font-size:13.5px;border-bottom:1px dashed var(--line)}
+  .feedrow:last-child{border-bottom:none}
+  .fdot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+  .fname{flex:1;min-width:0}
+  .ftime{font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  .fstat{display:flex;align-items:baseline;gap:10px}
+  .fbig{font-family:"Arial Narrow",Arial;font-size:42px;font-weight:800;line-height:1;color:var(--accent)}
+  .flbl{font-size:14.5px;color:var(--ink);font-weight:600}
+  .fweek{font-size:13px;color:var(--muted);margin-top:7px}
+  .fweek b{color:var(--ink)}
+
+  .flist{margin-top:12px;border-top:1px solid var(--line);padding-top:2px}
+  .fday{font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  .lastreg{font-size:12px;color:var(--muted);margin-bottom:11px}
+  .lastreg b{color:var(--ink)}
+  .bstats{display:flex;gap:9px}
+  .bstat{flex:1;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:13px;padding:11px 13px;display:flex;flex-direction:column}
+  .bstat.me{border-left-color:var(--accent)}
+  .bstat.other{border-left-color:var(--other)}
+  .bstat .bn{font-family:"Arial Narrow",Arial;font-size:34px;font-weight:800;line-height:1}
+  .bstat.me .bn{color:var(--accent)}
+  .bstat.other .bn{color:var(--other)}
+  .bstat .bl{font-size:12.5px;font-weight:700;margin-top:3px}
+  .bstat .b7{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .brecent{margin-top:13px}
+  .fdot.me{background:var(--accent)}
+  .fdot.other{background:var(--other)}
+  .fwho{font-size:11px;font-weight:800;color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="hi">Mi limpieza · Iago</div>
+    <div class="date" id="date"></div>
+    <div class="herotxt" style="margin-top:8px">
+      <div class="l2" id="weekTxt">0 hechas esta semana</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="hoy">Hoy</button>
+    <button class="tab" data-view="ajustes">Ajustes</button>
+  </div>
+
+  <!-- HOY -->
+  <div id="view-hoy">
+    <div class="sec" id="sec-board">
+      <div class="lastreg" id="lastReg">Última tarea registrada: —</div>
+      <div class="bstats">
+        <div class="bstat me"><span class="bn" id="bnMe">0</span><span class="bl">Tú · hoy</span><span class="b7" id="b7Me">7 días: 0</span></div>
+        <div class="bstat other"><span class="bn" id="bnOt">0</span><span class="bl" id="blOt">…</span><span class="b7" id="b7Ot">7 días: 0</span></div>
+      </div>
+      <div class="brecent" id="brecent"></div>
+      <button class="refresh" id="feedRefresh" style="margin-top:10px">↻ Actualizar</button>
+    </div>
+    <div class="sec" id="sec-diarias"><h3>Diarias <span class="cnt" id="cnt-d">0</span></h3><div class="body" id="list-diarias"></div></div>
+    <div class="sec" id="sec-pend"><h3>Pendientes <span class="cnt" id="cnt-p">0</span></h3><div class="body" id="list-pend"></div></div>
+    <div class="sec collapsed" id="sec-hechas"><h3 class="click"><span class="car">▾</span> Hechas hoy <span class="cnt" id="cnt-h">0</span></h3><div class="body" id="list-hechas"></div></div>
+    <div class="sec collapsed" id="sec-aldia"><h3 class="click"><span class="car">▾</span> Al día <span class="cnt" id="cnt-a">0</span></h3><div class="body" id="list-aldia"></div></div>
+  </div>
+
+  <!-- AJUSTES -->
+  <div id="view-ajustes">
+    <div class="note">Aquí ajustas cada cuánto toca cada tarea. Cada vez que marcas una como hecha, no vuelve a aparecer hasta que pasa su intervalo (Diario 1 día · 2×sem 3 · 1×sem 7 · 1×mes 30 · 2-3×año 120).</div>
+    <div class="toolbar">
+      <button id="allDone">Marcar todo al día</button>
+      <button class="warn" id="reset">Borrar histórico</button>
+    </div>
+    <div id="list-set"></div>
+  </div>
+</div>
+
+<script>
+const INTERVAL = {diario:1, "2sem":3, "1sem":7, "1mes":30, anyo:120};
+const FREQS = [{k:"diario",l:"Diario"},{k:"2sem",l:"2×sem"},{k:"1sem",l:"1×sem"},{k:"1mes",l:"1×mes"},{k:"anyo",l:"2-3×año"}];
+const FREQ_SHORT = {diario:"Diario","2sem":"2×sem","1sem":"1×sem","1mes":"1×mes",anyo:"2-3×año"};
+
+// Tareas de Iago (dificultad del reparto + frecuencia por defecto, editable en Ajustes)
+const TASKS = [
+  {id:"z0-0", n:"Aspirar", z:"Suelos", diff:"verde", freq:"diario"},
+  {id:"z7-2", n:"Sacar a Visma por la mañana", z:"Visma", diff:"amarillo", freq:"diario"},
+  {id:"z0-1", n:"Aspirar + fregar", z:"Suelos", diff:"amarillo", freq:"2sem"},
+  {id:"z8-2", n:"Bajar la basura", z:"Entrada y basura", diff:"naranja", freq:"2sem"},
+  {id:"z1-0", n:"Baño Iago", z:"Baños", diff:"naranja", freq:"1sem"},
+  {id:"z2-0", n:"Estudio Iago", z:"Espacios de trabajo", diff:"naranja", freq:"1sem"},
+  {id:"z3-0", n:"Fregadero y repisa", z:"Cocina", diff:"naranja", freq:"1sem"},
+  {id:"z3-1", n:"Superficies verticales cocina", z:"Cocina", diff:"amarillo", freq:"1sem"},
+  {id:"z3-2", n:"Mampara y electrodomésticos", z:"Cocina", diff:"amarillo", freq:"1sem"},
+  {id:"z3-3", n:"Interior nevera", z:"Cocina", diff:"naranja", freq:"1mes"},
+  {id:"z3-4", n:"Interior alacenas", z:"Cocina", diff:"naranja", freq:"1mes"},
+  {id:"z3-5", n:"Fregadero / tendal", z:"Cocina", diff:"verde", freq:"1mes"},
+  {id:"z8-3", n:"Limpiar el cubo de la basura", z:"Entrada y basura", diff:"rojo", freq:"1mes"},
+  {id:"z3-6", n:"Parte superior nevera y lavadora", z:"Cocina", diff:"verde", freq:"anyo"},
+];
+
+const KEY = "limpieza_tracker_iago_v1";
+let data = {freq:{}, history:[]};  // freq overrides + log de completados {id,d}
+
+function load(){
+  try{ const raw=localStorage.getItem(KEY); if(raw) data=JSON.parse(raw); }catch(e){}
+  if(!data.freq) data.freq={}; if(!data.history) data.history=[];
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
+
+// ===== Sincronización Supabase (feed compartido) =====
+const SB_URL="https://woiptkyrxkbpnvioypit.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvaXB0a3lyeGticG52aW95cGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzI2ODYsImV4cCI6MjA5MjA0ODY4Nn0.B2nKgj5rD0rkdLeMIrd9KgD8lUPWsBT4Y7aCtmnvbjA";
+const ME="iago";
+const OTHER="laura";
+const SB_HEAD={apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"};
+const nameToId={}; TASKS.forEach(t=>nameToId[t.n]=t.id);
+function taskById(id){ return TASKS.find(t=>t.id===id); }
+function capit(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function sbInsert(name){
+  fetch(SB_URL+"/rest/v1/limpieza_log",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify([{persona:ME,tarea:name,fecha:today()}])}).catch(()=>{});
+}
+function sbDelete(name){
+  const q="?persona=eq."+ME+"&tarea=eq."+encodeURIComponent(name)+"&fecha=eq."+today();
+  fetch(SB_URL+"/rest/v1/limpieza_log"+q,{method:"DELETE",headers:SB_HEAD}).catch(()=>{});
+}
+function timeLabel(creado,fecha){
+  const ds=daysSince(fecha); let t=null; try{t=new Date(creado);}catch(e){}
+  const hm=t?t.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"";
+  const day=ds<=0?"hoy":ds===1?"ayer":"hace "+ds+" días";
+  return (day+" "+hm).trim();
+}
+let feedRows=[];
+function relTime(r){
+  if(r.creado){ const ms=Date.now()-Date.parse(r.creado); const m=Math.floor(ms/60000);
+    if(m<1) return "ahora mismo"; if(m<60) return "hace "+m+" min";
+    const h=Math.floor(m/60); if(h<24) return "hace "+h+" h"; }
+  const ds=daysSince(r.fecha); return ds<=0?"hoy":ds===1?"ayer":"hace "+ds+" días";
+}
+function ownLocalRows(){ return data.history.map(h=>{ const t=taskById(h.id); return t?{persona:ME,tarea:t.n,fecha:h.d,creado:null}:null; }).filter(Boolean); }
+function mergedRows(){ const seen=new Set(feedRows.map(r=>r.persona+"|"+r.tarea+"|"+r.fecha)); const ex=ownLocalRows().filter(r=>!seen.has(r.persona+"|"+r.tarea+"|"+r.fecha)); return feedRows.concat(ex); }
+function rowKey(r){ return r.creado?Date.parse(r.creado):parseD(r.fecha).getTime(); }
+function renderBoard(){
+  const rows=mergedRows(); const t=today();
+  const cnt=(p,onlyToday)=>rows.filter(r=>r.persona===p && (onlyToday?r.fecha===t:daysSince(r.fecha)<=6)).length;
+  document.getElementById("bnMe").textContent=cnt(ME,true);
+  document.getElementById("b7Me").textContent="7 días: "+cnt(ME,false);
+  document.getElementById("bnOt").textContent=cnt(OTHER,true);
+  document.getElementById("b7Ot").textContent="7 días: "+cnt(OTHER,false);
+  document.getElementById("blOt").textContent=capit(OTHER)+" · hoy";
+  let last=null; rows.forEach(r=>{ const k=rowKey(r); if(!last||k>last.k) last={k,r}; });
+  const lr=document.getElementById("lastReg");
+  if(last){ const who=last.r.persona===ME?"Tú":capit(OTHER); lr.innerHTML="Última tarea registrada: <b>"+last.r.tarea+"</b> · "+who+" · "+relTime(last.r); }
+  else lr.textContent="Última tarea registrada: —";
+  const recent=rows.filter(r=>daysSince(r.fecha)<=6).sort((a,b)=>rowKey(b)-rowKey(a)).slice(0,10);
+  const box=document.getElementById("brecent");
+  box.innerHTML = recent.length? recent.map(r=>{ const meRow=r.persona===ME; const who=meRow?"Tú":capit(OTHER); const ds=daysSince(r.fecha); const day=ds<=0?"hoy":ds===1?"ayer":"hace "+ds+" d";
+    return '<div class="feedrow"><span class="fdot '+(meRow?"me":"other")+'"></span><span class="fname">'+r.tarea+'</span><span class="fwho">'+who+'</span><span class="fday">'+day+'</span></div>'; }).join("")
+    : '<div class="empty">Aún no hay tareas registradas.</div>';
+}
+async function sbFetch(){
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/limpieza_log?select=persona,tarea,fecha,creado&order=creado.desc&limit=120",{headers:SB_HEAD});
+    if(!res.ok) throw 0;
+    const rows=await res.json();
+    feedRows=rows;
+    try{ localStorage.setItem(KEY+"_feed", JSON.stringify(rows.slice(0,120))); }catch(e){}
+    const seen=new Set(data.history.map(h=>h.id+"|"+h.d)); let added=false;
+    rows.filter(r=>r.persona===ME).forEach(r=>{ const id=nameToId[r.tarea]; if(!id) return; const k=id+"|"+r.fecha; if(!seen.has(k)){ data.history.push({id,d:r.fecha}); seen.add(k); added=true; } });
+    if(added){ save(); renderHoy(); } else { renderBoard(); }
+  }catch(e){
+    try{ const c=localStorage.getItem(KEY+"_feed"); if(c){ feedRows=JSON.parse(c); renderBoard(); } }catch(_){}
+  }
+}
+
+function freqOf(t){ return data.freq[t.id] || t.freq; }
+function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function parseD(s){ const p=s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+function daysSince(s){ return Math.floor((parseD(today())-parseD(s))/86400000); }
+function lastDone(id){ let m=null; data.history.forEach(h=>{ if(h.id===id && (!m||h.d>m)) m=h.d; }); return m; }
+function isDue(t){ const l=lastDone(t.id); if(!l) return true; return daysSince(l) >= INTERVAL[freqOf(t)]; }
+function dueIn(t){ const l=lastDone(t.id); if(!l) return 0; return Math.max(0, INTERVAL[freqOf(t)] - daysSince(l)); }
+function doneToday(id){ return lastDone(id)===today(); }
+function lastTxt(id){ const l=lastDone(id); if(!l) return "nunca hecha"; const d=daysSince(l); return d===0?"hecha hoy":d===1?"hecha ayer":"hecha hace "+d+" días"; }
+
+function mark(id){ const t=taskById(id); data.history.push({id,d:today()}); if(data.history.length>600) data.history=data.history.slice(-600); save(); if(t) sbInsert(t.n); renderHoy(); }
+function unmark(id){ const t=taskById(id);
+  for(let i=data.history.length-1;i>=0;i--){ if(data.history[i].id===id && data.history[i].d===today()){ data.history.splice(i,1); break; } }
+  save(); if(t) sbDelete(t.n); renderHoy();
+}
+
+function diffDot(t){ return ""; }
+
+function cardHTML(t, mode){
+  const done = doneToday(t.id);
+  const di = dueIn(t);
+  let badge="";
+  if(mode==="aldia") badge='<span class="badge soon">vuelve en '+di+(di===1?" día":" días")+'</span>';
+  else if(!done && isDue(t)){ const l=lastDone(t.id); if(l){ const ov=daysSince(l)-INTERVAL[freqOf(t)]; if(ov>0) badge='<span class="badge due">+'+ov+(ov===1?" día":" días")+'</span>'; } }
+  return '<div class="card '+t.diff+(done?" done":"")+'" data-id="'+t.id+'">'+
+    '<div class="check" data-tap="'+t.id+'">✓</div>'+
+    '<div class="tinfo"><div class="tname">'+t.n+'</div>'+
+    '<div class="tsub"><span class="z">'+t.z+'</span><span class="badge freq">'+FREQ_SHORT[freqOf(t)]+'</span>'+
+    '<span>'+lastTxt(t.id)+'</span>'+badge+'</div></div></div>';
+}
+
+function renderHoy(){
+  const diarias=[], pend=[], hechas=[], aldia=[];
+  TASKS.forEach(t=>{
+    if(doneToday(t.id)){ hechas.push(t); return; }
+    if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); }
+    else aldia.push(t);
+  });
+  pend.sort((a,b)=>{ const la=lastDone(a.id),lb=lastDone(b.id); const oa=la?daysSince(la)-INTERVAL[freqOf(a)]:999, ob=lb?daysSince(lb)-INTERVAL[freqOf(b)]:999; return ob-oa; });
+  aldia.sort((a,b)=>dueIn(a)-dueIn(b));
+
+  const fill=(id,arr,mode,empty)=>{ document.getElementById(id).innerHTML = arr.length?arr.map(t=>cardHTML(t,mode)).join(""):'<div class="empty">'+empty+'</div>'; };
+  fill("list-diarias",diarias,"hoy","Nada diario pendiente. 👌");
+  fill("list-pend",pend,"hoy","No hay tareas puntuales pendientes hoy.");
+  fill("list-hechas",hechas,"hechas","Aún no has marcado nada hoy.");
+  fill("list-aldia",aldia,"aldia","—");
+
+  document.getElementById("cnt-d").textContent=diarias.length;
+  document.getElementById("cnt-p").textContent=pend.length;
+  document.getElementById("cnt-h").textContent=hechas.length;
+  document.getElementById("cnt-a").textContent=aldia.length;
+
+  const week=data.history.filter(h=>daysSince(h.d)<=6).length;
+  document.getElementById("weekTxt").textContent = week+(week===1?" hecha":" hechas")+" esta semana";
+  renderBoard();
+}
+
+function renderAjustes(){
+  const cont=document.getElementById("list-set");
+  cont.innerHTML = TASKS.map(t=>{
+    const fc=FREQS.map(f=>'<button class="f'+(freqOf(t)===f.k?" sel":"")+'" data-setfreq="'+t.id+'" data-f="'+f.k+'">'+f.l+'</button>').join("");
+    return '<div class="setrow"><div class="top"><span class="nm">'+t.n+'</span><span class="last">'+lastTxt(t.id)+'</span></div><div class="freqs">'+fc+'</div></div>';
+  }).join("");
+}
+
+// fecha cabecera
+document.getElementById("date").textContent = new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+
+// eventos
+document.addEventListener("click", e=>{
+  const tap=e.target.closest("[data-tap]");
+  if(tap){ const id=tap.dataset.tap; doneToday(id)?unmark(id):mark(id); return; }
+  const sf=e.target.closest("[data-setfreq]");
+  if(sf){ data.freq[sf.dataset.setfreq]=sf.dataset.f; save(); renderAjustes(); return; }
+  const h=e.target.closest(".sec h3.click");
+  if(h){ h.parentElement.classList.toggle("collapsed"); return; }
+});
+
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    const v=tab.dataset.view;
+    document.getElementById("view-hoy").style.display=v==="hoy"?"block":"none";
+    document.getElementById("view-ajustes").style.display=v==="ajustes"?"block":"none";
+    if(v==="hoy") renderHoy(); else renderAjustes();
+  });
+});
+
+document.getElementById("allDone").addEventListener("click",()=>{
+  if(confirm("¿Marcar TODAS las tareas como hechas hoy? (útil al empezar, para partir de cero)")){
+    TASKS.forEach(t=>{ if(!doneToday(t.id)) data.history.push({id:t.id,d:today()}); });
+    save(); renderAjustes(); renderHoy();
+  }
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("¿Borrar todo el histórico de tareas hechas? (las frecuencias se mantienen)")){
+    data.history=[]; save(); renderAjustes(); renderHoy();
+  }
+});
+
+load();
+renderHoy();
+try{ const c=localStorage.getItem(KEY+"_feed"); if(c){ feedRows=JSON.parse(c); } }catch(e){}
+renderBoard();
+sbFetch();
+document.getElementById("feedRefresh").addEventListener("click", sbFetch);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) sbFetch(); });
+</script>
+</body>
+</html>
