@@ -164,9 +164,27 @@
   .reqdone{background:var(--amarillo);color:#3a2f00;border:none;border-radius:9px;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
 
   @media (max-width:420px){.th-count{font-size:26px}}
+
+  /* botón fin de semana (baño + estudio) */
+  .wkbtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:14px;z-index:60;display:none;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;font-size:15px;font-weight:800;letter-spacing:.5px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .wkbtn.clean{background:#ffffff;color:#1b2430;border:1px solid #ffffff;animation:ringW 1.5s ease-in-out infinite}
+  .wkbtn.over{background:#e11d2a;color:#fff;border:1px solid #ff6b6b;animation:blinkR .7s steps(1,end) infinite}
+  @keyframes ringW{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 9px rgba(255,255,255,.30)}}
+  @keyframes blinkR{0%{opacity:1;box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(225,29,42,.55)}50%{opacity:.4;box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 11px rgba(225,29,42,0)}100%{opacity:1}}
+
+  .wkitem{display:flex;align-items:center;gap:10px;border-radius:12px;padding:12px 13px;margin-bottom:9px}
+  .wkitem.clean{background:#ffffff;color:#1b2430;border:1px solid #fff;animation:ringW 1.6s ease-in-out infinite}
+  .wkitem.over{background:#e11d2a;color:#fff;border:1px solid #ff6b6b;animation:blinkR .7s steps(1,end) infinite}
+  .wkitem>div{flex:1;min-width:0}
+  .wklbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;opacity:.7;color:inherit}
+  .wkname{font-size:15.5px;font-weight:700;color:inherit;margin-top:1px}
+  .wkdoneBtn{border:none;border-radius:9px;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+  .wkitem.clean .wkdoneBtn{background:#1b2430;color:#fff}
+  .wkitem.over .wkdoneBtn{background:#fff;color:#e11d2a}
 </style>
 </head>
 <body>
+<button class="wkbtn" id="wkbtn" title="Baño y estudio (fin de semana)">WC</button>
 <button class="bell" id="bell">🔔<span class="bellcount" id="bellCount"></span></button>
 <div class="wrap">
   <header>
@@ -241,6 +259,26 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SB_HEAD={apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"};
 const nameToId={}; TASKS.forEach(t=>nameToId[t.n]=t.id);
 function taskById(id){ return TASKS.find(t=>t.id===id); }
+
+const WEEKEND_TASKS=["z1-0","z2-0"];
+function lastSaturday(){ const d=new Date(); const since=(d.getDay()+1)%7; d.setDate(d.getDate()-since); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function wkDone(id){ const l=lastDone(id); return l && l>=lastSaturday(); }
+function wkPending(){ return WEEKEND_TASKS.filter(id=>!wkDone(id)); }
+function renderWeekendBtn(){
+  const b=document.getElementById("wkbtn"); if(!b) return;
+  if(!WEEKEND_TASKS.length){ b.style.display="none"; return; }
+  const pend=wkPending();
+  if(!pend.length){ b.style.display="none"; return; }
+  const dow=new Date().getDay(); const weekendNow=(dow===6||dow===0);
+  b.style.display="flex"; b.className="wkbtn "+(weekendNow?"clean":"over");
+}
+function openWeekendModal(){
+  const pend=wkPending(); if(!pend.length) return;
+  const dow=new Date().getDay(); const cls=(dow===6||dow===0)?"clean":"over";
+  const lbl=cls==="clean"?"Fin de semana":"¡Te pasaste de tiempo!";
+  const body=pend.map(id=>{ const t=taskById(id); return '<div class="wkitem '+cls+'"><div><div class="wklbl">'+lbl+'</div><div class="wkname">'+t.n+'</div></div><button class="wkdoneBtn" data-wkdone="'+id+'">Hecho ✓</button></div>'; }).join("");
+  showModal("Baño y estudio", body);
+}
 function capit(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
 const KEY="limpieza_tracker_iago_v1";
@@ -270,7 +308,7 @@ function cardHTML(t,mode){
 }
 function renderHoy(){
   const diarias=[],pend=[],aldia=[];
-  TASKS.forEach(t=>{ if(doneToday(t.id)) return; if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); } else aldia.push(t); });
+  TASKS.forEach(t=>{ if(WEEKEND_TASKS.indexOf(t.id)>=0) return; if(doneToday(t.id)) return; if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); } else aldia.push(t); });
   pend.sort((a,b)=>{ const la=lastDone(a.id),lb=lastDone(b.id); const oa=la?daysSince(la)-INTERVAL[freqOf(a)]:999, ob=lb?daysSince(lb)-INTERVAL[freqOf(b)]:999; return ob-oa; });
   aldia.sort((a,b)=>dueIn(a)-dueIn(b));
   const fill=(id,arr,mode,empty)=>{ document.getElementById(id).innerHTML = arr.length?arr.map(t=>cardHTML(t,mode)).join(""):'<div class="empty">'+empty+'</div>'; };
@@ -281,6 +319,7 @@ function renderHoy(){
   document.getElementById("cnt-p").textContent=pend.length;
   document.getElementById("cnt-a").textContent=aldia.length;
   renderBoard();
+  renderWeekendBtn();
 }
 function renderAjustes(){
   document.getElementById("list-set").innerHTML = TASKS.map(t=>{
@@ -382,6 +421,8 @@ document.addEventListener("click", e=>{
   const h=e.target.closest(".sec h3.click"); if(h){ h.parentElement.classList.toggle("collapsed"); return; }
   if(e.target.closest("#wkHead")){ document.getElementById("wkcard").classList.toggle("open"); return; }
   if(e.target.closest("#bell")){ openReqModal(); return; }
+  if(e.target.closest("#wkbtn")){ openWeekendModal(); return; }
+  const wkd=e.target.closest("[data-wkdone]"); if(wkd){ const id=wkd.dataset.wkdone; closeModal(); mark(id); return; }
   if(e.target.closest("[data-openpick]")){ openPicker(); return; }
   const done=e.target.closest("[data-done]"); if(done){ const id=done.dataset.done; const r=reqIncoming.find(x=>String(x.id)===String(id)); closeModal(); sbResolve(id, r?r.tarea:null); return; }
   const cancel=e.target.closest("[data-cancel]"); if(cancel){ closeModal(); sbCancel(cancel.dataset.cancel); return; }
