@@ -15,7 +15,7 @@
     --bg:#0f1419; --panel:#161d26; --card:#1b2430; --line:#2a3543;
     --ink:#eaf0f6; --muted:#8a98a8;
     --accent:#3b82f6; --accent-soft:#1e3155;
-    --other:#8b5cf6;
+    --other:#10b981;
     --verde:#22a55b; --amarillo:#eab308; --naranja:#ea7317; --rojo:#d83a3a;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -161,6 +161,19 @@
   .reqmodalintro{font-size:14px;margin:6px 0 12px;padding:0 2px}
   .reqmodalitem{font-size:16px;font-weight:700;background:#3a2f0a;border:1px solid #7a5f12;border-radius:10px;padding:11px 13px;margin:0 2px 8px;color:#ffe08a}
   .modalok{margin:8px 2px 0;width:calc(100% - 4px);background:var(--amarillo);color:#3a2f00;border:none;border-radius:11px;padding:12px;font-weight:800;font-size:14px;cursor:pointer}
+
+  .bcols{display:flex;gap:9px;margin-top:4px}
+  .bcol{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:12px;padding:9px 10px}
+  .bcol.col-iago{border-top-color:#3b82f6}
+  .bcol.col-laura{border-top-color:#10b981}
+  .bcolhead{font-size:12.5px;font-weight:800;margin-bottom:6px}
+  .col-iago .bcolhead{color:#6ea8ff}
+  .col-laura .bcolhead{color:#3fd9a3}
+  .crow{display:flex;gap:6px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .crow:last-child{border-bottom:none}
+  .cname{flex:1;min-width:0;font-size:13px;line-height:1.25}
+  .cday{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .cempty{font-size:12px;color:var(--muted);padding:4px 0}
 </style>
 </head>
 <body>
@@ -297,11 +310,13 @@ function renderBoard(){
   const lr=document.getElementById("lastReg");
   if(last){ const who=last.r.persona===ME?"Tú":capit(OTHER); lr.innerHTML="Última tarea registrada: <b>"+last.r.tarea+"</b> · "+who+" · "+relTime(last.r); }
   else lr.textContent="Última tarea registrada: —";
-  const recent=rows.filter(r=>daysSince(r.fecha)<=6).sort((a,b)=>rowKey(b)-rowKey(a)).slice(0,10);
-  const box=document.getElementById("brecent");
-  box.innerHTML = recent.length? recent.map(r=>{ const meRow=r.persona===ME; const who=meRow?"Tú":capit(OTHER); const ds=daysSince(r.fecha); const day=ds<=0?"hoy":ds===1?"ayer":"hace "+ds+" d";
-    return '<div class="feedrow"><span class="fdot '+(meRow?"me":"other")+'"></span><span class="fname">'+r.tarea+'</span><span class="fwho">'+who+'</span><span class="fday">'+day+'</span></div>'; }).join("")
-    : '<div class="empty">Aún no hay tareas registradas.</div>';
+  const recent=rows.filter(r=>daysSince(r.fecha)<=6).sort((a,b)=>rowKey(b)-rowKey(a));
+  function colHTML(persona){
+    const items=recent.filter(r=>r.persona===persona).slice(0,8).map(r=>{ const ds=daysSince(r.fecha); const day=ds<=0?"hoy":ds===1?"ayer":"hace "+ds+" d"; return '<div class="crow"><span class="cname">'+r.tarea+'</span><span class="cday">'+day+'</span></div>'; }).join("");
+    const label=persona==="iago"?"Iago":"Laura";
+    return '<div class="bcol col-'+persona+'"><div class="bcolhead">'+label+'</div>'+(items||'<div class="cempty">—</div>')+'</div>';
+  }
+  document.getElementById("brecent").innerHTML='<div class="bcols">'+colHTML("iago")+colHTML("laura")+'</div>';
 }
 async function sbFetch(){
   try{
