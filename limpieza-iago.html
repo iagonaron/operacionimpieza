@@ -130,6 +130,37 @@
   .fdot.me{background:var(--accent)}
   .fdot.other{background:var(--other)}
   .fwho{font-size:11px;font-weight:800;color:var(--muted);white-space:nowrap}
+
+  /* solicitudes */
+  .reqbar{margin:0 0 14px;display:flex;flex-direction:column;gap:8px}
+  .reqbtn{background:#3a2f0a;border:1px solid #6b5410;color:#ffd24d;border-radius:11px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer}
+  .reqbtn:active{transform:scale(.98)}
+  .reqoutlbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+  .reqoutrow{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);padding:3px 0}
+  .reqoutrow span{flex:1}
+  .reqcancel{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:2px 9px;cursor:pointer;font-size:12px}
+  #reqBanner:empty{display:none}
+  #reqBanner{margin-bottom:12px}
+  .reqcard{display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#3a2f0a,#2c2408);border:1px solid #7a5f12;border-radius:13px;padding:12px 14px;margin-bottom:8px;animation:pulseY 1.6s ease-in-out infinite}
+  @keyframes pulseY{0%,100%{box-shadow:0 0 0 0 rgba(234,179,8,0)}50%{box-shadow:0 0 0 4px rgba(234,179,8,.18)}}
+  .reqcard .reqtxt{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+  .reqicon{font-size:20px}
+  .reqfrom{font-size:11px;color:#e7c65a;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+  .reqname{font-size:15.5px;font-weight:700;color:#fff}
+  .reqdone{background:var(--amarillo);color:#3a2f00;border:none;border-radius:9px;padding:9px 12px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+  .modal{position:fixed;inset:0;background:rgba(8,11,16,.7);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal.open{display:flex}
+  .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:560px;max-height:82vh;display:flex;flex-direction:column;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;border-bottom:1px solid var(--line)}
+  .modal-head span{font-size:15px;font-weight:800}
+  .modal-head button{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+  .modal-body{overflow:auto;padding:10px 14px}
+  .pickzone{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800;margin:12px 0 6px}
+  .pickrow{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:7px;color:var(--ink);font-size:14.5px;cursor:pointer}
+  .pickrow:active{background:#222d3a}
+  .reqmodalintro{font-size:14px;margin:6px 0 12px;padding:0 2px}
+  .reqmodalitem{font-size:16px;font-weight:700;background:#3a2f0a;border:1px solid #7a5f12;border-radius:10px;padding:11px 13px;margin:0 2px 8px;color:#ffe08a}
+  .modalok{margin:8px 2px 0;width:calc(100% - 4px);background:var(--amarillo);color:#3a2f00;border:none;border-radius:11px;padding:12px;font-weight:800;font-size:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -149,6 +180,8 @@
 
   <!-- HOY -->
   <div id="view-hoy">
+    <div id="reqBanner"></div>
+    <div class="reqbar"><button id="reqBtn" class="reqbtn">🙏 Solicitar a <span id="reqWho">…</span></button><div id="reqOut" class="reqout"></div></div>
     <div class="sec" id="sec-board">
       <div class="lastreg" id="lastReg">Última tarea registrada: —</div>
       <div class="bstats">
@@ -175,6 +208,8 @@
   </div>
 </div>
 
+<div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><span id="modalTitle"></span><button id="modalClose">✕</button></div><div class="modal-body" id="modalBody"></div></div></div>
+
 <script>
 const INTERVAL = {diario:1, "2sem":3, "1sem":7, "1mes":30, anyo:120};
 const FREQS = [{k:"diario",l:"Diario"},{k:"2sem",l:"2×sem"},{k:"1sem",l:"1×sem"},{k:"1mes",l:"1×mes"},{k:"anyo",l:"2-3×año"}];
@@ -196,6 +231,16 @@ const TASKS = [
   {id:"z3-5", n:"Fregadero / tendal", z:"Cocina", diff:"verde", freq:"1mes"},
   {id:"z8-3", n:"Limpiar el cubo de la basura", z:"Entrada y basura", diff:"rojo", freq:"1mes"},
   {id:"z3-6", n:"Parte superior nevera y lavadora", z:"Cocina", diff:"verde", freq:"anyo"},
+];
+
+const OTHER_TASKS=[
+ {z:"Baños",t:["Baño Laura"]},
+ {z:"Espacios de trabajo",t:["Taller Laura"]},
+ {z:"Salón",t:["Comedero Visma","Ordenar armarios salón","Superficies horizontales salón","Ordenar sofá","Espejo salón"]},
+ {z:"Habitación",t:["Ordenar armarios habitación","Mesillas","Cambiar sábanas","Hacer la cama","Espejo habitación"]},
+ {z:"Ventanas",t:["Ventanas por dentro","Ventanas por fuera"]},
+ {z:"Visma",t:["Cepillar a Visma","Entrenamiento Visma"]},
+ {z:"Entrada y basura",t:["Puertas","Muebles entrada"]},
 ];
 
 const KEY = "limpieza_tracker_iago_v1";
@@ -268,6 +313,7 @@ async function sbFetch(){
     const seen=new Set(data.history.map(h=>h.id+"|"+h.d)); let added=false;
     rows.filter(r=>r.persona===ME).forEach(r=>{ const id=nameToId[r.tarea]; if(!id) return; const k=id+"|"+r.fecha; if(!seen.has(k)){ data.history.push({id,d:r.fecha}); seen.add(k); added=true; } });
     if(added){ save(); renderHoy(); } else { renderBoard(); }
+    sbFetchReq();
   }catch(e){
     try{ const c=localStorage.getItem(KEY+"_feed"); if(c){ feedRows=JSON.parse(c); renderBoard(); } }catch(_){}
   }
@@ -373,6 +419,58 @@ document.getElementById("reset").addEventListener("click",()=>{
     data.history=[]; save(); renderAjustes(); renderHoy();
   }
 });
+
+// ===== Solicitudes =====
+const REQ_SEEN_KEY=KEY+"_reqseen";
+let reqIncoming=[], reqOutgoing=[];
+function sbRequest(name){
+  fetch(SB_URL+"/rest/v1/limpieza_solicitudes",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify([{de:ME,para:OTHER,tarea:name,estado:"pendiente"}])}).then(()=>sbFetchReq()).catch(()=>{});
+}
+async function sbResolve(id, tarea){
+  try{ await fetch(SB_URL+"/rest/v1/limpieza_solicitudes?id=eq."+id,{method:"DELETE",headers:SB_HEAD}); }catch(e){}
+  const tid=tarea?nameToId[tarea]:null; if(tid && !doneToday(tid)) mark(tid);
+  sbFetchReq();
+}
+function sbCancel(id){ fetch(SB_URL+"/rest/v1/limpieza_solicitudes?id=eq."+id,{method:"DELETE",headers:SB_HEAD}).then(()=>sbFetchReq()).catch(()=>{}); }
+async function sbFetchReq(){
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/limpieza_solicitudes?select=id,de,para,tarea,estado,creado&estado=eq.pendiente&order=creado.desc&limit=50",{headers:SB_HEAD});
+    if(!res.ok) throw 0;
+    const all=await res.json();
+    reqIncoming=all.filter(r=>r.para===ME);
+    reqOutgoing=all.filter(r=>r.de===ME);
+    renderReq();
+    let seen=[]; try{ seen=JSON.parse(localStorage.getItem(REQ_SEEN_KEY)||"[]"); }catch(e){}
+    const nuevas=reqIncoming.filter(r=>seen.indexOf(r.id)<0);
+    try{ localStorage.setItem(REQ_SEEN_KEY, JSON.stringify(reqIncoming.map(r=>r.id))); }catch(e){}
+    if(nuevas.length) showReqModal(nuevas);
+  }catch(e){}
+}
+function renderReq(){
+  const b=document.getElementById("reqBanner");
+  b.innerHTML = reqIncoming.map(r=>'<div class="reqcard"><div class="reqtxt"><span class="reqicon">🙏</span><div><div class="reqfrom">'+capit(r.de)+' te pide</div><div class="reqname">'+r.tarea+'</div></div></div><button class="reqdone" data-done="'+r.id+'">Hecho ✓</button></div>').join("");
+  const o=document.getElementById("reqOut");
+  o.innerHTML = reqOutgoing.length ? '<div class="reqoutlbl">Le pediste a '+capit(OTHER)+':</div>'+reqOutgoing.map(r=>'<div class="reqoutrow"><span>'+r.tarea+'</span><button class="reqcancel" data-cancel="'+r.id+'">✕</button></div>').join("") : "";
+}
+function showModal(title, html){ document.getElementById("modalTitle").textContent=title; document.getElementById("modalBody").innerHTML=html; document.getElementById("modal").classList.add("open"); }
+function closeModal(){ document.getElementById("modal").classList.remove("open"); }
+function openPicker(){
+  const body=OTHER_TASKS.map(g=>'<div class="pickzone">'+g.z+'</div>'+g.t.map(n=>'<button class="pickrow" data-pick="'+encodeURIComponent(n)+'">'+n+'</button>').join("")).join("");
+  showModal("Pide a "+capit(OTHER)+" que priorice", body);
+}
+function showReqModal(nuevas){
+  const body='<div class="reqmodalintro">'+capit(nuevas[0].de)+' te pide que priorices cuanto antes:</div>'+nuevas.map(r=>'<div class="reqmodalitem">🙏 '+r.tarea+'</div>').join("")+'<button class="modalok">Entendido</button>';
+  showModal("Nueva solicitud", body);
+}
+document.addEventListener("click", e=>{
+  const done=e.target.closest("[data-done]"); if(done){ const id=done.dataset.done; const r=reqIncoming.find(x=>String(x.id)===String(id)); sbResolve(id, r?r.tarea:null); return; }
+  const cancel=e.target.closest("[data-cancel]"); if(cancel){ sbCancel(cancel.dataset.cancel); return; }
+  const pick=e.target.closest("[data-pick]"); if(pick){ sbRequest(decodeURIComponent(pick.dataset.pick)); closeModal(); return; }
+  if(e.target.closest(".modalok,#modalClose")){ closeModal(); return; }
+  if(e.target.id==="modal"){ closeModal(); return; }
+});
+document.getElementById("reqWho").textContent=capit(OTHER);
+document.getElementById("reqBtn").addEventListener("click", openPicker);
 
 load();
 renderHoy();
