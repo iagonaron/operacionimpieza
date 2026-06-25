@@ -50,8 +50,8 @@
   .col-laura .th-count{color:#3fd9a3}
   .th-sub{font-size:10.5px;color:var(--muted);margin-top:-2px}
   .reqmini{background:#3a2f0a;border:1px solid #6b5410;color:#ffd24d;border-radius:8px;font-size:13px;line-height:1;padding:4px 6px;cursor:pointer}
-  .tchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
-  .tchip{font-size:11.5px;font-weight:700;border-radius:7px;padding:4px 8px;line-height:1.15;background:#2a3543;color:#cdd7e1}
+  .tchips{display:flex;flex-direction:column;gap:5px;margin-top:9px}
+  .tchip{display:block;width:100%;font-size:12px;font-weight:700;border-radius:7px;padding:6px 9px;line-height:1.2;background:#2a3543;color:#cdd7e1}
   .tchip.verde{background:#34c277;color:#08230f}
   .tchip.amarillo{background:#f1c40f;color:#3a2f00}
   .tchip.naranja{background:#f3853a;color:#3a1c05}
@@ -78,10 +78,13 @@
   .bcolhead{font-size:12px;font-weight:800;margin-bottom:6px}
   .col-iago .bcolhead{color:#6ea8ff}
   .col-laura .bcolhead{color:#3fd9a3}
-  .crow{display:flex;gap:6px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--line)}
-  .crow:last-child{border-bottom:none}
-  .cname{flex:1;min-width:0;font-size:13px;line-height:1.25}
-  .cday{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .crow{display:flex;gap:6px;align-items:baseline;border-radius:7px;padding:6px 9px;margin-bottom:5px;background:#2a3543;color:#cdd7e1}
+  .crow.verde{background:#34c277;color:#08230f}
+  .crow.amarillo{background:#f1c40f;color:#3a2f00}
+  .crow.naranja{background:#f3853a;color:#3a1c05}
+  .crow.rojo{background:#e85d5d;color:#3a0d0d}
+  .cname{flex:1;min-width:0;font-size:12.5px;line-height:1.25;font-weight:600}
+  .cday{font-size:10.5px;white-space:nowrap;opacity:.7}
   .cempty{font-size:12px;color:var(--muted);padding:4px 0}
 
   /* listas de tareas */
@@ -312,7 +315,7 @@ function renderBoard(){
   const wl=rows.filter(r=>r.persona==="laura"&&daysSince(r.fecha)<=6);
   document.getElementById("wkCi").textContent=wi.length;
   document.getElementById("wkCl").textContent=wl.length;
-  const col=(arr,p)=>{ const items=arr.sort((a,b)=>rowKey(b)-rowKey(a)).slice(0,25).map(r=>'<div class="crow"><span class="cname">'+r.tarea+'</span><span class="cday">'+dayLbl(r.fecha)+'</span></div>').join("")||'<div class="cempty">—</div>'; return '<div class="bcol col-'+p+'"><div class="bcolhead">'+capit(p)+'</div>'+items+'</div>'; };
+  const col=(arr,p)=>{ const items=arr.sort((a,b)=>rowKey(b)-rowKey(a)).slice(0,25).map(r=>'<div class="crow '+(DIFF[r.tarea]||"")+'"><span class="cname">'+r.tarea+'</span><span class="cday">'+dayLbl(r.fecha)+'</span></div>').join("")||'<div class="cempty">—</div>'; return '<div class="bcol col-'+p+'"><div class="bcolhead">'+capit(p)+'</div>'+items+'</div>'; };
   document.getElementById("wkBody").innerHTML='<div class="bcols">'+col(wi,"iago")+col(wl,"laura")+'</div>';
 }
 
