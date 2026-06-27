@@ -246,7 +246,7 @@ const ME="iago", OTHER="laura";
 const TASKS = [
   {id:"z0-0",n:"Aspirar",z:"Suelos",diff:"verde",freq:"diario"},
   {id:"z7-2",n:"Sacar a Visma por la mañana",z:"Visma",diff:"amarillo",freq:"diario"},
-  {id:"z0-1",n:"Aspirar + fregar",z:"Suelos",diff:"amarillo",freq:"2sem"},
+  {id:"z0-1",n:"Fregar suelo",z:"Suelos",diff:"verde",freq:"2sem"},
   {id:"z8-2",n:"Bajar la basura",z:"Entrada y basura",diff:"naranja",freq:"2sem"},
   {id:"z1-0",n:"Baño Iago",z:"Baños",diff:"naranja",freq:"1sem"},
   {id:"z2-0",n:"Estudio Iago",z:"Espacios de trabajo",diff:"naranja",freq:"1sem"},
@@ -268,7 +268,7 @@ const OTHER_TASKS=[
  {z:"Visma",t:["Cepillar a Visma","Entrenamiento Visma"]},
  {z:"Entrada y basura",t:["Puertas","Muebles entrada"]},
 ];
-const DIFF={"Aspirar":"verde","Aspirar + fregar":"amarillo","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
+const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
 
 const SB_URL="https://woiptkyrxkbpnvioypit.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvaXB0a3lyeGticG52aW95cGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzI2ODYsImV4cCI6MjA5MjA0ODY4Nn0.B2nKgj5rD0rkdLeMIrd9KgD8lUPWsBT4Y7aCtmnvbjA";
@@ -324,14 +324,15 @@ function cardHTML(t,mode){
 }
 function renderHoy(){
   const diarias=[],pend=[],aldia=[];
-  const dow=new Date().getDay(); const isWeekend=(dow===0||dow===6); const wkMode=WEEKEND_TASKS.length>0;
+  const dow=new Date().getDay(); const isWeekend=(dow===0||dow===6);
+  const wkFront=[];
   TASKS.forEach(t=>{
     if(doneToday(t.id)) return;
-    if(WEEKEND_TASKS.indexOf(t.id)>=0){ if(isWeekend && !wkDone(t.id)) pend.push(t); return; }
-    if(wkMode && isWeekend && freqOf(t)!=="diario") return;
+    if(WEEKEND_TASKS.indexOf(t.id)>=0){ if(isWeekend && !wkDone(t.id)) wkFront.push(t); return; }
     if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); } else aldia.push(t);
   });
   pend.sort((a,b)=>{ const la=lastDone(a.id),lb=lastDone(b.id); const oa=la?daysSince(la)-intervalOf(a):999, ob=lb?daysSince(lb)-intervalOf(b):999; return ob-oa; });
+  pend.unshift(...wkFront);
   aldia.sort((a,b)=>dueIn(a)-dueIn(b));
   const fill=(id,arr,mode,empty)=>{ document.getElementById(id).innerHTML = arr.length?arr.map(t=>cardHTML(t,mode)).join(""):'<div class="empty">'+empty+'</div>'; };
   fill("list-diarias",diarias,"hoy","Nada diario pendiente hoy.");
