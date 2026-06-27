@@ -187,10 +187,12 @@
   .card.blink-naranja{animation:blkO 1.1s ease-in-out infinite}
   .card.blink-verde{animation:blkV 1.1s ease-in-out infinite}
   .card.blink-rojo{animation:blkR 1.1s ease-in-out infinite}
+  .card.blink-blanco{animation:blkW 1.1s ease-in-out infinite}
   @keyframes blkY{0%,100%{box-shadow:inset 0 0 0 2000px rgba(234,179,8,0)}50%{box-shadow:inset 0 0 0 2000px rgba(234,179,8,.26)}}
   @keyframes blkO{0%,100%{box-shadow:inset 0 0 0 2000px rgba(234,115,23,0)}50%{box-shadow:inset 0 0 0 2000px rgba(234,115,23,.26)}}
   @keyframes blkV{0%,100%{box-shadow:inset 0 0 0 2000px rgba(34,165,91,0)}50%{box-shadow:inset 0 0 0 2000px rgba(34,165,91,.26)}}
   @keyframes blkR{0%,100%{box-shadow:inset 0 0 0 2000px rgba(216,58,58,0)}50%{box-shadow:inset 0 0 0 2000px rgba(216,58,58,.30)}}
+  @keyframes blkW{0%,100%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,0)}50%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,.16)}}
 </style>
 </head>
 <body>
@@ -239,6 +241,7 @@ const FREQ_SHORT={diario:"Diario","2sem":"2×sem","1sem":"1×sem","1mes":"1×mes
 const CUSTOM_DAYS={"z0-1":5,"z8-2":5};
 function intervalOf(t){ return CUSTOM_DAYS[t.id]||INTERVAL[freqOf(t)]; }
 function freqLabel(t){ return CUSTOM_DAYS[t.id]?("cada "+CUSTOM_DAYS[t.id]+" días"):FREQ_SHORT[freqOf(t)]; }
+function blinkClass(t){ if(WEEKEND_TASKS.indexOf(t.id)>=0){ const dw=new Date().getDay(); return (dw===0||dw===6)?" blink-blanco":""; } if(CUSTOM_DAYS[t.id] && isDue(t)) return " blink-"+t.diff; return ""; }
 const ME="iago", OTHER="laura";
 const TASKS = [
   {id:"z0-0",n:"Aspirar",z:"Suelos",diff:"verde",freq:"diario"},
@@ -280,10 +283,10 @@ function wkPending(){ return WEEKEND_TASKS.filter(id=>!wkDone(id)); }
 function renderWeekendBtn(){
   const b=document.getElementById("wkbtn"); if(!b) return;
   if(!WEEKEND_TASKS.length){ b.style.display="none"; return; }
-  const pend=wkPending();
-  if(!pend.length){ b.style.display="none"; return; }
   const dow=new Date().getDay(); const weekendNow=(dow===6||dow===0);
-  b.style.display="flex"; b.className="wkbtn "+(weekendNow?"clean":"over");
+  const pend=wkPending();
+  if(weekendNow || !pend.length){ b.style.display="none"; return; }
+  b.style.display="flex"; b.className="wkbtn over";
 }
 function openWeekendModal(){
   const pend=wkPending(); if(!pend.length) return;
@@ -317,11 +320,17 @@ function cardHTML(t,mode){
   const done=doneToday(t.id); const di=dueIn(t); let badge="";
   if(mode==="aldia") badge='<span class="badge soon">vuelve en '+di+(di===1?" día":" días")+'</span>';
   else if(!done && isDue(t)){ const l=lastDone(t.id); if(l){ const ov=daysSince(l)-intervalOf(t); if(ov>0) badge='<span class="badge due">+'+ov+(ov===1?" día":" días")+'</span>'; } }
-  return '<div class="card '+t.diff+(done?" done":"")+((CUSTOM_DAYS[t.id]&&isDue(t))?" blink-"+t.diff:"")+'" data-id="'+t.id+'"><div class="check" data-tap="'+t.id+'">✓</div><div class="tinfo"><div class="tname">'+t.n+'</div><div class="tsub"><span class="z">'+t.z+'</span><span class="badge freq">'+freqLabel(t)+'</span><span>'+lastTxt(t.id)+'</span>'+badge+'</div></div></div>';
+  return '<div class="card '+t.diff+(done?" done":"")+blinkClass(t)+'" data-id="'+t.id+'"><div class="check" data-tap="'+t.id+'">✓</div><div class="tinfo"><div class="tname">'+t.n+'</div><div class="tsub"><span class="z">'+t.z+'</span><span class="badge freq">'+freqLabel(t)+'</span><span>'+lastTxt(t.id)+'</span>'+badge+'</div></div></div>';
 }
 function renderHoy(){
   const diarias=[],pend=[],aldia=[];
-  TASKS.forEach(t=>{ if(WEEKEND_TASKS.indexOf(t.id)>=0) return; if(doneToday(t.id)) return; if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); } else aldia.push(t); });
+  const dow=new Date().getDay(); const isWeekend=(dow===0||dow===6); const wkMode=WEEKEND_TASKS.length>0;
+  TASKS.forEach(t=>{
+    if(doneToday(t.id)) return;
+    if(WEEKEND_TASKS.indexOf(t.id)>=0){ if(isWeekend && !wkDone(t.id)) pend.push(t); return; }
+    if(wkMode && isWeekend && freqOf(t)!=="diario") return;
+    if(isDue(t)){ (freqOf(t)==="diario"?diarias:pend).push(t); } else aldia.push(t);
+  });
   pend.sort((a,b)=>{ const la=lastDone(a.id),lb=lastDone(b.id); const oa=la?daysSince(la)-intervalOf(a):999, ob=lb?daysSince(lb)-intervalOf(b):999; return ob-oa; });
   aldia.sort((a,b)=>dueIn(a)-dueIn(b));
   const fill=(id,arr,mode,empty)=>{ document.getElementById(id).innerHTML = arr.length?arr.map(t=>cardHTML(t,mode)).join(""):'<div class="empty">'+empty+'</div>'; };
