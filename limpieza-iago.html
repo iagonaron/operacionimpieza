@@ -239,9 +239,10 @@ const INTERVAL={diario:1,"2sem":3,"1sem":7,"1mes":30,anyo:120};
 const FREQS=[{k:"diario",l:"Diario"},{k:"2sem",l:"2×sem"},{k:"1sem",l:"1×sem"},{k:"1mes",l:"1×mes"},{k:"anyo",l:"2-3×año"}];
 const FREQ_SHORT={diario:"Diario","2sem":"2×sem","1sem":"1×sem","1mes":"1×mes",anyo:"2-3×año"};
 const CUSTOM_DAYS={"z0-1":5,"z8-2":5};
+const BLINK_IDS=["z0-1","z8-2"];
 function intervalOf(t){ return CUSTOM_DAYS[t.id]||INTERVAL[freqOf(t)]; }
-function freqLabel(t){ return CUSTOM_DAYS[t.id]?("cada "+CUSTOM_DAYS[t.id]+" días"):FREQ_SHORT[freqOf(t)]; }
-function blinkClass(t){ if(WEEKEND_TASKS.indexOf(t.id)>=0){ const dw=new Date().getDay(); return (dw===0||dw===6)?" blink-blanco":""; } if(CUSTOM_DAYS[t.id] && isDue(t)) return " blink-"+t.diff; return ""; }
+function freqLabel(t){ if(CUSTOM_DAYS[t.id]){ const d=CUSTOM_DAYS[t.id]; return d===14?"cada 2 semanas":("cada "+d+" días"); } return FREQ_SHORT[freqOf(t)]; }
+function blinkClass(t){ if(WEEKEND_TASKS.indexOf(t.id)>=0){ const dw=new Date().getDay(); return (dw===0||dw===6)?" blink-blanco":""; } if(BLINK_IDS.indexOf(t.id)>=0 && isDue(t)) return " blink-"+t.diff; return ""; }
 const ME="iago", OTHER="laura";
 const TASKS = [
   {id:"z0-0",n:"Aspirar",z:"Suelos",diff:"verde",freq:"diario"},
@@ -252,7 +253,8 @@ const TASKS = [
   {id:"z2-0",n:"Estudio Iago",z:"Espacios de trabajo",diff:"naranja",freq:"1sem"},
   {id:"z3-0",n:"Fregadero y repisa",z:"Cocina",diff:"naranja",freq:"1sem"},
   {id:"z3-1",n:"Superficies verticales cocina",z:"Cocina",diff:"amarillo",freq:"1sem"},
-  {id:"z3-2",n:"Mampara y electrodomésticos",z:"Cocina",diff:"amarillo",freq:"1sem"},
+  {id:"z3-2",n:"Mamparas",z:"Cocina",diff:"amarillo",freq:"1sem"},
+  {id:"z3-7",n:"Superficies horizontales cocina",z:"Cocina",diff:"amarillo",freq:"1sem"},
   {id:"z3-3",n:"Interior nevera",z:"Cocina",diff:"naranja",freq:"1mes"},
   {id:"z3-4",n:"Interior alacenas",z:"Cocina",diff:"naranja",freq:"1mes"},
   {id:"z3-5",n:"Fregadero / tendal",z:"Cocina",diff:"verde",freq:"1mes"},
@@ -268,7 +270,7 @@ const OTHER_TASKS=[
  {z:"Visma",t:["Cepillar a Visma","Entrenamiento Visma"]},
  {z:"Entrada y basura",t:["Puertas","Muebles entrada"]},
 ];
-const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
+const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Mamparas":"amarillo","Superficies horizontales cocina":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
 
 const SB_URL="https://woiptkyrxkbpnvioypit.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvaXB0a3lyeGticG52aW95cGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzI2ODYsImV4cCI6MjA5MjA0ODY4Nn0.B2nKgj5rD0rkdLeMIrd9KgD8lUPWsBT4Y7aCtmnvbjA";
