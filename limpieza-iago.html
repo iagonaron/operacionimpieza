@@ -193,10 +193,32 @@
   @keyframes blkV{0%,100%{box-shadow:inset 0 0 0 2000px rgba(34,165,91,0)}50%{box-shadow:inset 0 0 0 2000px rgba(34,165,91,.26)}}
   @keyframes blkR{0%,100%{box-shadow:inset 0 0 0 2000px rgba(216,58,58,0)}50%{box-shadow:inset 0 0 0 2000px rgba(216,58,58,.30)}}
   @keyframes blkW{0%,100%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,0)}50%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,.16)}}
+
+  /* chat */
+  .mail{position:fixed;top:calc(12px + env(safe-area-inset-top));right:70px;z-index:60;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#1b2430;border:1px solid #2a3543;color:#eaf0f6;font-size:20px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .mail.alert{background:#fff;color:#1b2430;border-color:#fff;animation:mailPulse 1.3s ease-in-out infinite}
+  @keyframes mailPulse{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 8px rgba(255,255,255,.30)}}
+  .mailcount{position:absolute;top:-4px;right:-4px;background:var(--rojo);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  .mailcount:empty{display:none}
+  .chat{position:fixed;inset:0;background:rgba(8,11,16,.7);backdrop-filter:blur(3px);display:none;flex-direction:column;justify-content:flex-end;z-index:80}
+  .chat.open{display:flex}
+  .chat-card{background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;max-width:560px;width:100%;margin:0 auto;height:80vh;display:flex;flex-direction:column}
+  .chat-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .chat-head span{font-weight:800;font-size:15px}
+  .chat-head button{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+  .chat-msgs{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .bubble{max-width:80%;padding:8px 11px;border-radius:14px;font-size:14px;line-height:1.3;word-wrap:break-word;overflow-wrap:anywhere;white-space:pre-wrap}
+  .bubble.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+  .bubble.other{align-self:flex-start;background:var(--card);border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:4px}
+  .bubble .bt{display:block;font-size:10px;opacity:.6;margin-top:3px;text-align:right}
+  .chat-input{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .chat-input textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px 12px;font-family:inherit;font-size:14px;max-height:110px}
+  .chat-input button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 16px;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
 <button class="wkbtn" id="wkbtn" title="Baño y estudio (fin de semana)">WC</button>
+<button class="mail" id="mailBtn">✉<span class="mailcount" id="mailCount"></span></button>
 <button class="bell" id="bell">🔔<span class="bellcount" id="bellCount"></span></button>
 <div class="wrap">
   <header>
@@ -231,6 +253,8 @@
     <div id="list-set"></div>
   </div>
 </div>
+
+<div class="chat" id="chatModal"><div class="chat-card"><div class="chat-head"><span id="chatTitle">Chat</span><button id="chatClose">✕</button></div><div class="chat-msgs" id="chatMsgs"></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Escribe un mensaje…"></textarea><button id="chatSend">Enviar</button></div></div></div>
 
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><span id="modalTitle"></span><button id="modalClose">✕</button></div><div class="modal-body" id="modalBody"></div></div></div>
 
@@ -433,6 +457,7 @@ async function sbFetch(){
     rows.filter(r=>r.persona===ME).forEach(r=>{ const id=nameToId[r.tarea]; if(!id) return; const k=id+"|"+r.fecha; if(!seen.has(k)){ data.history.push({id,d:r.fecha}); seen.add(k); added=true; } });
     if(added){ save(); renderHoy(); } else renderBoard();
     sbFetchReq();
+    sbFetchChat();
   }catch(e){
     try{ const c=localStorage.getItem(KEY+"_feed"); if(c){ feedRows=JSON.parse(c); renderBoard(); } }catch(_){}
   }
@@ -468,12 +493,60 @@ document.getElementById("allDone").addEventListener("click",()=>{ if(confirm("¿
 document.getElementById("reset").addEventListener("click",()=>{ if(confirm("¿Borrar todo el histórico de tareas hechas? (las frecuencias se mantienen)")){ data.history=[]; save(); renderAjustes(); } });
 
 document.getElementById("date").textContent = new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+/* ===== chat ===== */
+const CHAT_SEEN_KEY=KEY+"_chatseen";
+let chatMsgs=[], chatOpen=false, chatTimer=null;
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function fmtTime(cr){ try{ return new Date(cr).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+function sbSendChat(txt){ fetch(SB_URL+"/rest/v1/limpieza_chat",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify([{de:ME,texto:txt}])}).then(()=>sbFetchChat()).catch(()=>{}); }
+async function sbFetchChat(){
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/limpieza_chat?select=id,de,texto,creado&order=creado.asc&limit=300",{headers:SB_HEAD});
+    if(!res.ok) throw 0;
+    chatMsgs=await res.json();
+    try{ localStorage.setItem(KEY+"_chatcache", JSON.stringify(chatMsgs.slice(-100))); }catch(e){}
+    if(chatOpen){ renderChat(); markChatSeen(); }
+    updateMail();
+  }catch(e){ try{ const c=localStorage.getItem(KEY+"_chatcache"); if(c){ chatMsgs=JSON.parse(c); if(chatOpen) renderChat(); updateMail(); } }catch(_){}}
+}
+function chatSeen(){ let v=0; try{ v=parseInt(localStorage.getItem(CHAT_SEEN_KEY)||"0",10)||0; }catch(e){} return v; }
+function markChatSeen(){ let mx=0; chatMsgs.forEach(m=>{ if(m.id>mx) mx=m.id; }); try{ localStorage.setItem(CHAT_SEEN_KEY,String(mx)); }catch(e){} }
+function updateMail(){
+  const btn=document.getElementById("mailBtn"); if(!btn) return;
+  const seen=chatSeen();
+  const unread=chatMsgs.filter(m=>m.de===OTHER && m.id>seen).length;
+  const c=document.getElementById("mailCount");
+  if(unread>0 && !chatOpen){ btn.classList.add("alert"); c.textContent=unread>9?"9+":String(unread); }
+  else { btn.classList.remove("alert"); c.textContent=""; }
+}
+function renderChat(){
+  const box=document.getElementById("chatMsgs");
+  box.innerHTML=chatMsgs.map(m=>'<div class="bubble '+(m.de===ME?"me":"other")+'">'+escapeHtml(m.texto)+'<span class="bt">'+fmtTime(m.creado)+'</span></div>').join("");
+  box.scrollTop=box.scrollHeight;
+}
+function openChat(){
+  chatOpen=true; document.getElementById("chatModal").classList.add("open");
+  document.getElementById("chatTitle").textContent="Chat con "+capit(OTHER);
+  renderChat(); markChatSeen(); updateMail(); sbFetchChat();
+  if(chatTimer) clearInterval(chatTimer); chatTimer=setInterval(sbFetchChat,4000);
+  setTimeout(()=>{ const i=document.getElementById("chatInput"); if(i) i.focus(); },120);
+}
+function closeChat(){ chatOpen=false; document.getElementById("chatModal").classList.remove("open"); if(chatTimer){ clearInterval(chatTimer); chatTimer=null; } markChatSeen(); updateMail(); }
+function sendChat(){ const inp=document.getElementById("chatInput"); const v=(inp.value||"").trim(); if(!v) return; inp.value=""; sbSendChat(v); }
+document.getElementById("mailBtn").addEventListener("click", openChat);
+document.getElementById("chatClose").addEventListener("click", closeChat);
+document.getElementById("chatSend").addEventListener("click", sendChat);
+document.getElementById("chatInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+
 load();
 renderHoy();
 try{ const c=localStorage.getItem(KEY+"_feed"); if(c){ feedRows=JSON.parse(c); } }catch(e){}
 renderBoard();
 sbFetch();
 sbFetchReq();
+try{ const cc=localStorage.getItem(KEY+"_chatcache"); if(cc){ chatMsgs=JSON.parse(cc); } }catch(e){}
+updateMail();
+sbFetchChat();
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ sbFetch(); } });
 </script>
 </body>
