@@ -135,7 +135,7 @@
   #view-ajustes{display:none}
 
   /* campana de solicitudes */
-  .bell{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:60;display:none;align-items:center;justify-content:center;
+  .bell{position:fixed;top:calc(12px + env(safe-area-inset-top));right:70px;z-index:60;display:none;align-items:center;justify-content:center;
     width:46px;height:46px;border-radius:50%;background:#3a2f0a;border:1px solid #7a5f12;color:#ffd24d;font-size:20px;cursor:pointer;
     box-shadow:0 6px 18px rgba(0,0,0,.4);animation:ring 1.4s ease-in-out infinite}
   @keyframes ring{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(234,179,8,0)}50%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 8px rgba(234,179,8,.22)}}
@@ -195,7 +195,7 @@
   @keyframes blkW{0%,100%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,0)}50%{box-shadow:inset 0 0 0 2000px rgba(255,255,255,.16)}}
 
   /* chat */
-  .mail{position:fixed;top:calc(12px + env(safe-area-inset-top));right:70px;z-index:60;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#1b2430;border:1px solid #2a3543;color:#eaf0f6;font-size:20px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .mail{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:60;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#1b2430;border:1px solid #2a3543;color:#eaf0f6;font-size:20px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
   .mail.alert{background:#fff;color:#1b2430;border-color:#fff;animation:mailPulse 1.3s ease-in-out infinite}
   @keyframes mailPulse{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 8px rgba(255,255,255,.30)}}
   .mailcount{position:absolute;top:-4px;right:-4px;background:var(--rojo);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px}
@@ -214,6 +214,12 @@
   .chat-input{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
   .chat-input textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px 12px;font-family:inherit;font-size:14px;max-height:110px}
   .chat-input button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 16px;font-weight:800;cursor:pointer}
+  .attachbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:0 12px;font-size:18px;cursor:pointer}
+  .chatimg{max-width:100%;max-height:260px;border-radius:10px;display:block;margin-bottom:3px;cursor:pointer}
+  .expired{opacity:.6;font-style:italic}
+  .imgview{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:90;padding:16px}
+  .imgview.open{display:flex}
+  .imgview img{max-width:100%;max-height:100%;border-radius:8px}
 </style>
 </head>
 <body>
@@ -254,7 +260,9 @@
   </div>
 </div>
 
-<div class="chat" id="chatModal"><div class="chat-card"><div class="chat-head"><span id="chatTitle">Chat</span><button id="chatClose">✕</button></div><div class="chat-msgs" id="chatMsgs"></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Escribe un mensaje…"></textarea><button id="chatSend">Enviar</button></div></div></div>
+<div class="chat" id="chatModal"><div class="chat-card"><div class="chat-head"><span id="chatTitle">Chat</span><button id="chatClose">✕</button></div><div class="chat-msgs" id="chatMsgs"></div><div class="chat-input"><button id="chatAttach" class="attachbtn" title="Adjuntar foto">📷</button><input type="file" accept="image/*" id="chatFile" hidden><textarea id="chatInput" rows="1" placeholder="Escribe un mensaje…"></textarea><button id="chatSend">Enviar</button></div></div></div>
+
+<div class="imgview" id="imgView"><img id="imgViewImg" alt="foto"></div>
 
 <div class="modal" id="modal"><div class="modal-card"><div class="modal-head"><span id="modalTitle"></span><button id="modalClose">✕</button></div><div class="modal-body" id="modalBody"></div></div></div>
 
@@ -292,11 +300,11 @@ const OTHER_TASKS=[
  {z:"Suelos",t:["Aspirar","Fregar suelo"]},
  {z:"Baños",t:["Baño Iago"]},
  {z:"Espacios de trabajo",t:["Estudio Iago"]},
- {z:"Cocina",t:["Fregadero y repisa","Superficies verticales cocina","Mamparas","Superficies horizontales cocina","Interior nevera","Interior alacenas","Fregadero / tendal","Parte superior nevera y lavadora"]},
+ {z:"Cocina",t:["Fregadero y repisa","Superficies verticales cocina","Campana extractora","Superficies horizontales cocina","Interior nevera","Interior alacenas","Fregadero / tendal","Parte superior nevera y lavadora"]},
  {z:"Visma",t:["Sacar a Visma por la mañana"]},
  {z:"Entrada y basura",t:["Bajar la basura","Limpiar el cubo de la basura"]},
 ];
-const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Mamparas":"amarillo","Superficies horizontales cocina":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
+const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Mamparas":"amarillo","Campana extractora":"amarillo","Superficies horizontales cocina":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
 
 const SB_URL="https://woiptkyrxkbpnvioypit.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvaXB0a3lyeGticG52aW95cGl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzI2ODYsImV4cCI6MjA5MjA0ODY4Nn0.B2nKgj5rD0rkdLeMIrd9KgD8lUPWsBT4Y7aCtmnvbjA";
@@ -500,13 +508,18 @@ const CHAT_SEEN_KEY=KEY+"_chatseen";
 let chatMsgs=[], chatOpen=false, chatTimer=null;
 function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function fmtTime(cr){ try{ return new Date(cr).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
-function sbSendChat(txt){ fetch(SB_URL+"/rest/v1/limpieza_chat",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify([{de:ME,texto:txt}])}).then(()=>sbFetchChat()).catch(()=>{}); }
+function sbSendChat(txt,imagen){ fetch(SB_URL+"/rest/v1/limpieza_chat",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify([{de:ME,texto:txt||"",imagen:imagen||null}])}).then(()=>sbFetchChat()).catch(()=>{}); }
+function ageHours(cr){ try{ return (Date.now()-Date.parse(cr))/3600000; }catch(e){ return 0; } }
+function sbSweepImages(){ chatMsgs.forEach(m=>{ if(m.imagen && ageHours(m.creado)>=48){ fetch(SB_URL+"/rest/v1/limpieza_chat?id=eq."+m.id,{method:"PATCH",headers:Object.assign({Prefer:"return=minimal"},SB_HEAD),body:JSON.stringify({imagen:null})}).catch(()=>{}); m.imagen=null; } }); }
+function fileToDataURL(file,maxDim,q){ return new Promise((res,rej)=>{ const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; const sc=Math.min(1,maxDim/Math.max(w,h)); w=Math.round(w*sc); h=Math.round(h*sc); const c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(img,0,0,w,h); res(c.toDataURL("image/jpeg",q)); }; img.onerror=rej; img.src=rd.result; }; rd.onerror=rej; rd.readAsDataURL(file); }); }
+async function sendImage(file){ try{ const url=await fileToDataURL(file,1000,0.6); sbSendChat("",url); }catch(e){} }
 async function sbFetchChat(){
   try{
-    const res=await fetch(SB_URL+"/rest/v1/limpieza_chat?select=id,de,texto,creado&order=creado.asc&limit=300",{headers:SB_HEAD});
+    const res=await fetch(SB_URL+"/rest/v1/limpieza_chat?select=id,de,texto,imagen,creado&order=creado.asc&limit=300",{headers:SB_HEAD});
     if(!res.ok) throw 0;
     chatMsgs=await res.json();
-    try{ localStorage.setItem(KEY+"_chatcache", JSON.stringify(chatMsgs.slice(-100))); }catch(e){}
+    sbSweepImages();
+    try{ localStorage.setItem(KEY+"_chatcache", JSON.stringify(chatMsgs.slice(-100).map(m=>({id:m.id,de:m.de,texto:m.texto,creado:m.creado})))); }catch(e){}
     if(chatOpen){ renderChat(); markChatSeen(); }
     updateMail();
   }catch(e){ try{ const c=localStorage.getItem(KEY+"_chatcache"); if(c){ chatMsgs=JSON.parse(c); if(chatOpen) renderChat(); updateMail(); } }catch(_){}}
@@ -523,7 +536,7 @@ function updateMail(){
 }
 function renderChat(){
   const box=document.getElementById("chatMsgs");
-  box.innerHTML=chatMsgs.map(m=>'<div class="bubble '+(m.de===ME?"me":"other")+'">'+escapeHtml(m.texto)+'<span class="bt">'+fmtTime(m.creado)+'</span></div>').join("");
+  box.innerHTML=chatMsgs.map(m=>{ let inner=""; if(m.imagen) inner+='<img class="chatimg" src="'+m.imagen+'" alt="foto">'; if(m.texto) inner+=escapeHtml(m.texto); if(!m.imagen && !m.texto) inner='<span class="expired">📷 foto caducada</span>'; return '<div class="bubble '+(m.de===ME?"me":"other")+'">'+inner+'<span class="bt">'+fmtTime(m.creado)+'</span></div>'; }).join("");
   box.scrollTop=box.scrollHeight;
 }
 function openChat(){
@@ -539,6 +552,10 @@ document.getElementById("mailBtn").addEventListener("click", openChat);
 document.getElementById("chatClose").addEventListener("click", closeChat);
 document.getElementById("chatSend").addEventListener("click", sendChat);
 document.getElementById("chatInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+document.getElementById("chatAttach").addEventListener("click", ()=>document.getElementById("chatFile").click());
+document.getElementById("chatFile").addEventListener("change", e=>{ const f=e.target.files&&e.target.files[0]; if(f) sendImage(f); e.target.value=""; });
+document.getElementById("chatMsgs").addEventListener("click", e=>{ const im=e.target.closest(".chatimg"); if(im){ document.getElementById("imgViewImg").src=im.src; document.getElementById("imgView").classList.add("open"); } });
+document.getElementById("imgView").addEventListener("click", ()=>document.getElementById("imgView").classList.remove("open"));
 
 load();
 renderHoy();
