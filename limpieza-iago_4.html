@@ -5,24 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Limpieza Laura">
+<meta name="apple-mobile-web-app-title" content="Limpieza Iago">
 <meta name="theme-color" content="#0f1419">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧽</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧽</text></svg>">
-<title>Mi limpieza · Laura</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+<title>Mi limpieza · Iago</title>
 <style>
   :root{
     --bg:#0f1419; --panel:#161d26; --card:#1b2430; --line:#2a3543;
     --ink:#eaf0f6; --muted:#8a98a8;
-    --accent:#10b981; --accent-soft:#103a2c;
-    --other:#3b82f6;
+    --accent:#2563eb; --accent-soft:#dbe6fd;
+    --other:#10b981;
     --iago:#3b82f6; --laura:#10b981;
     --verde:#22a55b; --amarillo:#eab308; --naranja:#ea7317; --rojo:#d83a3a;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:radial-gradient(700px 420px at 110% -8%, #16332a 0%, transparent 60%), var(--bg);
+    background:radial-gradient(700px 420px at 110% -8%, #1c2a3f 0%, transparent 60%), var(--bg);
     color:var(--ink);min-height:100vh;
     padding:max(16px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
     -webkit-user-select:none;user-select:none;}
@@ -228,7 +228,7 @@
 <button class="bell" id="bell">🔔<span class="bellcount" id="bellCount"></span></button>
 <div class="wrap">
   <header>
-    <div class="hi">Mi limpieza · Laura</div>
+    <div class="hi">Mi limpieza · Iago</div>
     <div class="date" id="date"></div>
   </header>
 
@@ -270,39 +270,37 @@
 const INTERVAL={diario:1,"2sem":3,"1sem":7,"1mes":30,anyo:120};
 const FREQS=[{k:"diario",l:"Diario"},{k:"2sem",l:"2×sem"},{k:"1sem",l:"1×sem"},{k:"1mes",l:"1×mes"},{k:"anyo",l:"2-3×año"}];
 const FREQ_SHORT={diario:"Diario","2sem":"2×sem","1sem":"1×sem","1mes":"1×mes",anyo:"2-3×año"};
-const CUSTOM_DAYS={"z5-2":14};
-const BLINK_IDS=[];
+const CUSTOM_DAYS={"z0-1":5,"z8-2":5};
+const BLINK_IDS=["z0-1","z8-2"];
 function intervalOf(t){ return CUSTOM_DAYS[t.id]||INTERVAL[freqOf(t)]; }
 function freqLabel(t){ if(CUSTOM_DAYS[t.id]){ const d=CUSTOM_DAYS[t.id]; return d===14?"cada 2 semanas":("cada "+d+" días"); } return FREQ_SHORT[freqOf(t)]; }
 function blinkClass(t){ if(WEEKEND_TASKS.indexOf(t.id)>=0){ const dw=new Date().getDay(); return (dw===0||dw===6)?" blink-blanco":""; } if(BLINK_IDS.indexOf(t.id)>=0 && isDue(t)) return " blink-"+t.diff; return ""; }
-const ME="laura", OTHER="iago";
+const ME="iago", OTHER="laura";
 const TASKS = [
-  {id:"z7-2",n:"Sacar a Visma por la mañana",z:"Visma",diff:"amarillo",freq:"diario"},
-  {id:"z7-1",n:"Entrenamiento Visma",z:"Visma",diff:"verde",freq:"diario"},
-  {id:"z4-3",n:"Ordenar sofá",z:"Salón",diff:"verde",freq:"2sem"},
-  {id:"z7-0",n:"Cepillar a Visma",z:"Visma",diff:"verde",freq:"2sem"},
-  {id:"z1-1",n:"Baño Laura",z:"Baños",diff:"naranja",freq:"1sem"},
-  {id:"z2-1",n:"Taller Laura",z:"Espacios de trabajo",diff:"naranja",freq:"1sem"},
-  {id:"z4-0",n:"Comedero Visma",z:"Salón",diff:"verde",freq:"1sem"},
-  {id:"z4-2",n:"Superficies horizontales salón",z:"Salón",diff:"naranja",freq:"1sem"},
-  {id:"z4-4",n:"Espejo salón",z:"Salón",diff:"verde",freq:"1sem"},
-  {id:"z5-1",n:"Mesillas",z:"Habitación",diff:"verde",freq:"1sem"},
-  {id:"z5-2",n:"Cambiar sábanas",z:"Habitación",diff:"amarillo",freq:"1sem"},
-  {id:"z5-4",n:"Espejo habitación",z:"Habitación",diff:"verde",freq:"1sem"},
-  {id:"z6-0",n:"Ventanas por dentro",z:"Ventanas",diff:"naranja",freq:"1sem"},
-  {id:"z8-0",n:"Puertas",z:"Entrada y basura",diff:"verde",freq:"1sem"},
-  {id:"z8-1",n:"Muebles entrada",z:"Entrada y basura",diff:"verde",freq:"1sem"},
-  {id:"z4-1",n:"Ordenar armarios salón",z:"Salón",diff:"amarillo",freq:"1mes"},
-  {id:"z5-0",n:"Ordenar armarios habitación",z:"Habitación",diff:"verde",freq:"anyo"},
-  {id:"z6-1",n:"Ventanas por fuera",z:"Ventanas",diff:"rojo",freq:"anyo"},
+  {id:"z0-0",n:"Aspirar",z:"Suelos",diff:"verde",freq:"diario"},
+  {id:"z5-3",n:"Hacer la cama",z:"Habitación",diff:"verde",freq:"diario"},
+  {id:"z0-1",n:"Fregar suelo",z:"Suelos",diff:"verde",freq:"2sem"},
+  {id:"z8-2",n:"Bajar la basura",z:"Entrada y basura",diff:"naranja",freq:"2sem"},
+  {id:"z1-0",n:"Baño Iago",z:"Baños",diff:"naranja",freq:"1sem"},
+  {id:"z2-0",n:"Estudio Iago",z:"Espacios de trabajo",diff:"naranja",freq:"1sem"},
+  {id:"z3-0",n:"Fregadero y repisa",z:"Cocina",diff:"naranja",freq:"1sem"},
+  {id:"z3-1",n:"Superficies verticales cocina",z:"Cocina",diff:"amarillo",freq:"1sem"},
+  {id:"z3-2",n:"Campana extractora",z:"Cocina",diff:"amarillo",freq:"1sem"},
+  {id:"z3-7",n:"Superficies horizontales + electrodomésticos",z:"Cocina",diff:"amarillo",freq:"1sem"},
+  {id:"z3-3",n:"Interior nevera",z:"Cocina",diff:"naranja",freq:"1mes"},
+  {id:"z3-4",n:"Interior alacenas",z:"Cocina",diff:"naranja",freq:"1mes"},
+  {id:"z3-5",n:"Fregadero / tendal",z:"Cocina",diff:"verde",freq:"1mes"},
+  {id:"z8-3",n:"Limpiar el cubo de la basura",z:"Entrada y basura",diff:"rojo",freq:"1mes"},
+  {id:"z3-6",n:"Parte superior nevera y lavadora",z:"Cocina",diff:"verde",freq:"anyo"},
 ];
 const OTHER_TASKS=[
- {z:"Suelos",t:["Aspirar","Fregar suelo"]},
- {z:"Baños",t:["Baño Iago"]},
- {z:"Espacios de trabajo",t:["Estudio Iago"]},
- {z:"Cocina",t:["Fregadero y repisa","Superficies verticales cocina","Campana extractora","Superficies horizontales + electrodomésticos","Interior nevera","Interior alacenas","Fregadero / tendal","Parte superior nevera y lavadora"]},
- {z:"Habitación",t:["Hacer la cama"]},
- {z:"Entrada y basura",t:["Bajar la basura","Limpiar el cubo de la basura"]},
+ {z:"Baños",t:["Baño Laura"]},
+ {z:"Espacios de trabajo",t:["Taller Laura"]},
+ {z:"Salón",t:["Comedero Visma","Ordenar armarios salón","Superficies horizontales salón","Ordenar sofá","Espejo salón"]},
+ {z:"Habitación",t:["Ordenar armarios habitación","Mesillas","Cambiar sábanas","Espejo habitación"]},
+ {z:"Ventanas",t:["Ventanas por dentro","Ventanas por fuera"]},
+ {z:"Visma",t:["Cepillar a Visma","Entrenamiento Visma","Sacar a Visma por la mañana"]},
+ {z:"Entrada y basura",t:["Puertas","Muebles entrada"]},
 ];
 const DIFF={"Aspirar":"verde","Aspirar + fregar":"verde","Fregar suelo":"verde","Baño Iago":"naranja","Baño Laura":"naranja","Estudio Iago":"naranja","Taller Laura":"naranja","Fregadero y repisa":"naranja","Superficies verticales cocina":"amarillo","Mampara y electrodomésticos":"amarillo","Mamparas":"amarillo","Campana extractora":"amarillo","Superficies horizontales cocina":"amarillo","Superficies horizontales + electrodomésticos":"amarillo","Interior nevera":"naranja","Interior alacenas":"naranja","Fregadero / tendal":"verde","Parte superior nevera y lavadora":"verde","Comedero Visma":"verde","Ordenar armarios salón":"amarillo","Superficies horizontales salón":"naranja","Ordenar sofá":"verde","Espejo salón":"verde","Ordenar armarios habitación":"verde","Mesillas":"verde","Cambiar sábanas":"amarillo","Hacer la cama":"verde","Espejo habitación":"verde","Ventanas por dentro":"naranja","Ventanas por fuera":"rojo","Cepillar a Visma":"verde","Entrenamiento Visma":"verde","Sacar a Visma por la mañana":"amarillo","Puertas":"verde","Muebles entrada":"verde","Bajar la basura":"naranja","Limpiar el cubo de la basura":"rojo"};
 
@@ -312,7 +310,7 @@ const SB_HEAD={apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"appl
 const nameToId={}; TASKS.forEach(t=>nameToId[t.n]=t.id);
 function taskById(id){ return TASKS.find(t=>t.id===id); }
 
-const WEEKEND_TASKS=[];
+const WEEKEND_TASKS=["z1-0","z2-0"];
 function lastSaturday(){ const d=new Date(); const since=(d.getDay()+1)%7; d.setDate(d.getDate()-since); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function wkDone(id){ const l=lastDone(id); return l && l>=lastSaturday(); }
 function wkPending(){ return WEEKEND_TASKS.filter(id=>!wkDone(id)); }
@@ -333,7 +331,7 @@ function openWeekendModal(){
 }
 function capit(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
-const KEY="limpieza_tracker_laura_v1";
+const KEY="limpieza_tracker_iago_v1";
 let data={freq:{},history:[]};
 function load(){ try{ const raw=localStorage.getItem(KEY); if(raw) data=JSON.parse(raw); }catch(e){} if(!data.freq)data.freq={}; if(!data.history)data.history=[]; }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
